@@ -25,13 +25,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.rtcall.R;
+import com.rtcall.RTCallApplication;
 import com.rtcall.net.ServerSocket;
 import com.rtcall.net.message.S2CMessage;
 import com.rtcall.services.RTStreamService;
@@ -41,26 +45,43 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class CallActivity extends AppCompatActivity {
+public class CallActivity extends AppCompatActivity implements SurfaceHolder.Callback {
     String callerUid;
 
     boolean isCaller = false;
 
     Activity thisActivity;
+    RTCallApplication thisApp;
     ExecutorService cameraExecutor;
 
     PreviewView srfRecord;
-    PreviewView srfStream;
+    SurfaceView srfStream;
+
+    @Override
+    public void surfaceCreated(@NonNull SurfaceHolder surfaceHolder) {
+        thisApp.mediaPlayer = new MediaPlayer();
+        thisApp.mediaPlayer.setDisplay(srfStream.getHolder());
+    }
+
+    @Override
+    public void surfaceChanged(@NonNull SurfaceHolder surfaceHolder, int i, int i1, int i2) {
+
+    }
+
+    @Override
+    public void surfaceDestroyed(@NonNull SurfaceHolder surfaceHolder) {
+
+    }
 
     private class TestBroadcastReceiver extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.v("LOG", "Received intent");
-            if(intent.getAction().equals("SERVICE_MESSAGE")){
+            if (intent.getAction().equals("SERVICE_MESSAGE")) {
                 S2CMessage msg = (S2CMessage) intent.getExtras().get("message");
-                if(msg.getType() == S2CMessage.MSG_PEER_ADDR && isCaller) {
-                    ServerSocket.ping(thisActivity,callerUid);
+                if (msg.getType() == S2CMessage.MSG_PEER_ADDR && isCaller) {
+                    ServerSocket.ping(thisActivity, callerUid);
                     Log.e("PING", "caller: " + callerUid);
                 }
             } else {
@@ -72,10 +93,13 @@ public class CallActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         thisActivity = this;
+        thisApp = (RTCallApplication) getApplication();
         ServerSocket.setContext(this.getApplicationContext());
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_call);
         srfRecord = findViewById(R.id.srf_record);
+        srfStream = findViewById(R.id.srf_stream);
+        srfStream.getHolder().addCallback(this);
 
         callerUid = getIntent().getExtras().getString("caller");
         Log.v("CALL_ACT", "-----------------Ccaller: " + callerUid);
@@ -91,9 +115,13 @@ public class CallActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, PackageManager.PERMISSION_GRANTED);
         }
 
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_NETWORK_STATE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.INTERNET}, PackageManager.PERMISSION_GRANTED);
+        }
+
         //from call receiver only
         boolean doPing = getIntent().getBooleanExtra("doPing", false);
-        if(doPing){
+        if (doPing) {
             ServerSocket.ping(thisActivity, callerUid);
         } else {
             isCaller = true;

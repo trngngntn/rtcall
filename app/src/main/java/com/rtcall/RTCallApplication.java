@@ -1,6 +1,8 @@
 package com.rtcall;
 
 import android.app.Application;
+import android.media.MediaPlayer;
+import android.view.SurfaceView;
 
 import androidx.annotation.NonNull;
 import androidx.camera.camera2.Camera2Config;
@@ -12,4 +14,8 @@ public class RTCallApplication extends Application implements CameraXConfig.Prov
     public CameraXConfig getCameraXConfig() {
         return Camera2Config.defaultConfig();
     }
+
+    public SurfaceView srfStream;
+
+    public MediaPlayer mediaPlayer;
 }

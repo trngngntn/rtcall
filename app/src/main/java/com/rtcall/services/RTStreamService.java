@@ -2,11 +2,14 @@ package com.rtcall.services;
 
 import android.app.Service;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
+import android.view.SurfaceHolder;
 
+import com.rtcall.RTCallApplication;
 import com.rtcall.net.ServerSocket;
 
 import java.io.IOException;
@@ -17,24 +20,33 @@ public class RTStreamService extends Service {
     public RTStreamService() {
     }
 
+    private ParcelFileDescriptor parcelFd;
     private MediaRecorder mediaRecorder;
+    private MediaPlayer mediaPlayer;
 
-    private void init(DatagramSocket datagramSocket) throws IOException {
+    private void initRecorder() throws IOException {
         mediaRecorder = new MediaRecorder();
         mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
-        //mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
+        mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
         mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
 
-        //mediaRecorder.setVideoFrameRate(30);
+        mediaRecorder.setVideoFrameRate(30);
         mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
-        //mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
+        mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
 
-        ParcelFileDescriptor parcelFd = ParcelFileDescriptor.fromDatagramSocket(datagramSocket);
         mediaRecorder.setOutputFile(parcelFd.getFileDescriptor());
 
-        //mediaRecorder.setOutputFile("./video.mp4");
+        //mediaRecorder.setOutputFile("/sdcard/video.mp4");
 
         mediaRecorder.prepare();
+    }
+
+    private void initPlayer() throws IOException {
+        //mediaPlayer = new MediaPlayer();
+        mediaPlayer.setDataSource(parcelFd.getFileDescriptor());
+        //mediaPlayer.setDisplay(sh);
+        mediaPlayer.prepare();
+        mediaPlayer.start();
     }
 
     public void start(){
@@ -53,7 +65,10 @@ public class RTStreamService extends Service {
             Log.e(TAG, "DatagramSocket is null.");
         }
         try {
-            init(ServerSocket.getDatagramSocket());
+            parcelFd = ParcelFileDescriptor.fromDatagramSocket(ServerSocket.getDatagramSocket());
+            initRecorder();
+            mediaPlayer = ((RTCallApplication)getApplication()).mediaPlayer;
+            initPlayer();
             start();
         } catch (IOException e) {
             e.printStackTrace();
