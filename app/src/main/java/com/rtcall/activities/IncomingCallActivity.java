@@ -70,7 +70,6 @@ public class IncomingCallActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         thisActivity = this;
-        ServerSocket.setContext(this.getApplicationContext());
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_incoming_call);
         getSupportActionBar().hide();

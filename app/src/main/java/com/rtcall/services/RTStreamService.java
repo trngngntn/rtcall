@@ -13,32 +13,13 @@ import java.io.IOException;
 import java.net.DatagramSocket;
 
 public class RTStreamService extends Service {
-    private static final String TAG = "RTC_STREAM_SERVICE";
+    private static final String TAG = "SERVICE_STREAM";
+
     public RTStreamService() {
     }
 
-    private MediaRecorder mediaRecorder;
+    public void start() {
 
-    private void init(DatagramSocket datagramSocket) throws IOException {
-        mediaRecorder = new MediaRecorder();
-        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
-        //mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
-        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-
-        //mediaRecorder.setVideoFrameRate(30);
-        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
-        //mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
-
-        ParcelFileDescriptor parcelFd = ParcelFileDescriptor.fromDatagramSocket(datagramSocket);
-        mediaRecorder.setOutputFile(parcelFd.getFileDescriptor());
-
-        //mediaRecorder.setOutputFile("./video.mp4");
-
-        mediaRecorder.prepare();
-    }
-
-    public void start(){
-        mediaRecorder.start();
     }
 
     @Override
@@ -49,18 +30,9 @@ public class RTStreamService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if(ServerSocket.getDatagramSocket() == null){
-            Log.e(TAG, "DatagramSocket is null.");
-        }
-        try {
-            init(ServerSocket.getDatagramSocket());
-            start();
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.e(TAG, "Failed to init stream");
-        }
         return super.onStartCommand(intent, flags, startId);
     }
+
 
     @Override
     public IBinder onBind(Intent intent) {

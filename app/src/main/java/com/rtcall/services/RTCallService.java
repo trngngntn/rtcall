@@ -11,6 +11,8 @@ import androidx.annotation.Nullable;
 import com.rtcall.net.ServerSocket;
 
 public class RTCallService extends Service {
+    private static final String TAG = "SERVICE_BACKGROUND";
+
     @Override
     public void onCreate() {
         super.onCreate();

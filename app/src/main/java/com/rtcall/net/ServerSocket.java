@@ -6,6 +6,7 @@ import android.util.Log;
 
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.rtcall.RTCallApplication;
 import com.rtcall.net.message.C2SMessage;
 import com.rtcall.net.message.NetMessage;
 import com.rtcall.net.message.S2CMessage;
@@ -23,11 +24,13 @@ import java.util.ArrayDeque;
 import java.util.Queue;
 
 public class ServerSocket {
+    private static final String TAG = "NET_SOCKET";
+
     private static final String SERVER_HOST = "trngngntn.duckdns.org";
     private static final int SERVER_PORT = 42069;
 
     private static Socket socket;
-    private static Context currentContext;
+    private static Context appContext;
 
     private static Queue<C2SMessage> msgQueue;
 
@@ -37,15 +40,9 @@ public class ServerSocket {
     private static InputStream reader;
     private static OutputStream writer;
 
-    private static DatagramSocket fSocket;
 
-    /**
-     *  Set context for LocalBroadcaster to work
-     *
-     * @param context
-     */
-    public static void setContext(Context context) {
-        currentContext = context;
+    public static void prepare(Context app){
+        appContext = app;
     }
 
     /**
@@ -75,8 +72,7 @@ public class ServerSocket {
 
                         Intent intent = new Intent("SERVICE_MESSAGE");
                         intent.putExtra("message", msg);
-                        if (currentContext != null)
-                            LocalBroadcastManager.getInstance(currentContext).sendBroadcast(intent);
+                        LocalBroadcastManager.getInstance(appContext).sendBroadcast(intent);
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -121,37 +117,6 @@ public class ServerSocket {
         Log.v("Net", "Queued new message");
     }
 
-    /**
-     *
-     * @param peerUid
-     */
-    public static void ping(Context context, String peerUid) {
-        Log.d("NET", "Ping server!");
-        new Thread(() -> {
-            try {
-                if(fSocket == null){
-                    fSocket = new DatagramSocket();
-                    Log.d("NET", "Created DatagramSocket");
-                    LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent("SOCKET_CREATED"));
-                }
-
-                InetSocketAddress addr = new InetSocketAddress(SERVER_HOST, SERVER_PORT);
-                byte[] b = C2SMessage.createPingMessage(peerUid).byteArray();
-                DatagramPacket packet = new DatagramPacket(b, b.length, addr);
-                fSocket.send(packet);
-            } catch (SocketException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }).start();
-
-    }
-
-    public static DatagramSocket getDatagramSocket() {
-        return fSocket;
-    }
-
     private static S2CMessage read() {
         try {
             byte[] buffer = new byte[4];
@@ -178,15 +143,6 @@ public class ServerSocket {
             e.printStackTrace();
         } finally {
             socket = null;
-        }
-    }
-
-    public static void creD() {
-        try {
-            fSocket = new DatagramSocket(42069);
-            //new InetSocketAddress()
-        } catch (SocketException e) {
-            e.printStackTrace();
         }
     }
 }

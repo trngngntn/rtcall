@@ -67,7 +67,6 @@ public class TestActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         thisActivity = this;
-        ServerSocket.setContext(this.getApplicationContext());
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test);
         getSupportActionBar().hide();
