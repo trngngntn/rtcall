@@ -102,69 +102,6 @@ public class CallActivity extends AppCompatActivity {
 
     }
 
-    PeerConnectionFactory peerConnFactory;
-
-    private void createCapturer() {
-        VideoCapturer videoCapturer = null;
-        CameraEnumerator camEnum;
-        if (Camera2Enumerator.isSupported(this)) {
-            camEnum = new Camera2Enumerator(this);
-        } else {
-            camEnum = new Camera1Enumerator(true);
-        }
-
-        String[] deviceList = camEnum.getDeviceNames();
-
-        for (String device : deviceList) {
-            if (camEnum.isFrontFacing(device)) {
-                videoCapturer = camEnum.createCapturer(device, null);
-                if (videoCapturer != null) {
-                    break;
-                }
-            }
-        }
-
-        SurfaceTextureHelper surfaceTextureHelper = SurfaceTextureHelper.create("CaptureThread", eglBase.getEglBaseContext());
-        VideoSource videoSource = peerConnFactory.createVideoSource(videoCapturer.isScreencast());
-        videoCapturer.initialize(surfaceTextureHelper, getApplicationContext(), videoSource.getCapturerObserver());
-        videoCapturer.startCapture(1280, 720, 30);/*W,H,fps*/
-
-        VideoTrack videoTrack = peerConnFactory.createVideoTrack("ID", videoSource);
-        videoTrack.setEnabled(true);
-        MyVideoSink sink = new MyVideoSink();
-        videoTrack.addSink(sink);
-        sink.setTarget(srfPlayRenderer);
-
-        MediaConstraints audioContraints = new MediaConstraints();
-
-        AudioSource audioSource = peerConnFactory.createAudioSource(new MediaConstraints());
-        AudioTrack audioTrack = peerConnFactory.createAudioTrack("ID", audioSource);
-
-        /* To Streaming */
-
-        MediaStream mediaStream = peerConnFactory.createLocalMediaStream("LABEL");
-        mediaStream.addTrack(audioTrack);
-        mediaStream.addTrack(videoTrack);
-
-
-    }
-
-
-
-    private class MyVideoSink implements VideoSink{
-        private VideoSink target;
-        @Override
-        public void onFrame(VideoFrame videoFrame) {
-            if(target == null){
-                return;
-            }
-            target.onFrame(videoFrame);
-        }
-        synchronized public void setTarget(VideoSink target){
-            this.target = target;
-        }
-    }
-
     ListenableFuture<ProcessCameraProvider> pcp;
 
     private void initiateConnection() {

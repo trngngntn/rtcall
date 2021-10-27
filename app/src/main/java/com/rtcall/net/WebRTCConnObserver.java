@@ -2,25 +2,21 @@ package com.rtcall.net;
 
 import android.util.Log;
 
+import com.rtcall.RTCallApplication;
 import com.rtcall.net.message.C2SMessage;
 
-import org.webrtc.AudioTrack;
 import org.webrtc.DataChannel;
 import org.webrtc.IceCandidate;
 import org.webrtc.MediaStream;
 import org.webrtc.PeerConnection;
 import org.webrtc.RtpReceiver;
-import org.webrtc.SurfaceViewRenderer;
-import org.webrtc.VideoTrack;
+import org.webrtc.SdpObserver;
+import org.webrtc.SessionDescription;
 
-public class RTConnObserver implements PeerConnection.Observer {
+public class WebRTCConnObserver implements PeerConnection.Observer {
     private static final String TAG = "NET_OBSERVER";
-    private AudioTrack remoteAudioTrack;
-    private VideoTrack remoteVideoTrack;
-    private SurfaceViewRenderer srfRemoteVideo;
 
-    public RTConnObserver(){
-
+    public WebRTCConnObserver() {
     }
 
     @Override
@@ -60,7 +56,7 @@ public class RTConnObserver implements PeerConnection.Observer {
 
     @Override
     public void onAddStream(MediaStream mediaStream) {
-
+        //application.getStream().setRemoteMeidaStream(mediaStream);
     }
 
     @Override

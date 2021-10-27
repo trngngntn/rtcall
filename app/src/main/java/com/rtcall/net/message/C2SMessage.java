@@ -7,7 +7,11 @@ public class C2SMessage extends NetMessage {
     private final static int MSG_LOGIN = 0x02;
     private final static int MSG_DIAL = 0x04;
     private final static int MSG_PING = 0x05;
+
     private final static int MSG_CANDIDATE = 0x06;
+    private final static int MSG_OFFER = 0x07;
+    private final static int MSG_ANSWER = 0x08;
+
     private final static int MSG_DECLINE_CALL = 0x1B;
 
     protected C2SMessage(int type, JSONObject data) {
@@ -69,5 +73,25 @@ public class C2SMessage extends NetMessage {
             e.printStackTrace();
         }
         return new C2SMessage(MSG_CANDIDATE, data);
+    }
+
+    public static C2SMessage createOfferMessage(String desc){
+        JSONObject data = new JSONObject();
+        try {
+            data.put("desc", desc);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return new C2SMessage(MSG_OFFER, data);
+    }
+
+    public static C2SMessage createAnswerMessage(String desc) {
+        JSONObject data = new JSONObject();
+        try {
+            data.put("desc", desc);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return new C2SMessage(MSG_ANSWER, data);
     }
 }

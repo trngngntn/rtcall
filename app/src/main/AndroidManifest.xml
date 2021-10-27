@@ -18,6 +18,22 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.RTCall">
+        <activity
+            android:name=".activities.SettingActivity"
+            android:exported="true" />
+        <activity
+            android:name=".activities.ContactListActivity"
+            android:exported="true" />
+        <activity
+            android:name=".activities.RegisterActivity"
+            android:exported="true" />
+        <activity
+            android:name=".activities.OutgoingCallActivity"
+            android:exported="true" />
+        <activity
+            android:name=".activities.LoginActivity"
+            android:exported="true" />
+
         <service
             android:name=".services.RTStreamService"
             android:enabled="true"
@@ -37,12 +53,12 @@
             android:name=".activities.TestActivity"
             android:exported="true">
 
-<!--             <intent-filter>-->
-<!--             <action android:name="android.intent.action.MAIN" />-->
+            <!-- <intent-filter> -->
+            <!-- <action android:name="android.intent.action.MAIN" /> -->
 
 
-<!--             <category android:name="android.intent.category.LAUNCHER" />-->
-<!--             </intent-filter>-->
+            <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
+            <!-- </intent-filter> -->
         </activity>
         <activity
             android:name=".activities.MainActivity"

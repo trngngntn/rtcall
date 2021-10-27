@@ -16,6 +16,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.rtcall.R;
+import com.rtcall.entity.User;
 import com.rtcall.net.ServerSocket;
 import com.rtcall.net.message.C2SMessage;
 import com.rtcall.net.message.S2CMessage;
@@ -94,9 +95,11 @@ public class TestActivity extends AppCompatActivity {
             if (edtDial.getText().toString().equals("")) {
                 Toast.makeText(this.getBaseContext(), "Invalid UID", Toast.LENGTH_SHORT).show();
             } else {
-                ServerSocket.queueMessage(C2SMessage.createDialMessage(edtDial.getText().toString()));
-                Intent i = new Intent(thisActivity, CallActivity.class);
-                i.putExtra("caller",edtDial.getText().toString() );
+                String calleeUid = edtDial.getText().toString();
+
+                ServerSocket.queueMessage(C2SMessage.createDialMessage(calleeUid));
+                Intent i = new Intent(thisActivity, OutgoingCallActivity.class);
+                i.putExtra("callee",new User(calleeUid, calleeUid));
                 startActivity(i);
             }
         });

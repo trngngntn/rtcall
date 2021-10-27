@@ -56,7 +56,7 @@ public class ServerSocket {
                 socket = new Socket(SERVER_HOST, SERVER_PORT);
                 reader = socket.getInputStream();
                 writer = socket.getOutputStream();
-                Log.d("NetService", "Socket created");
+                Log.d(TAG, "Socket created");
             } catch (IOException e) {
                 e.printStackTrace();
                 return false;
@@ -114,7 +114,7 @@ public class ServerSocket {
      */
     public static void queueMessage(C2SMessage msg) {
         msgQueue.add(msg);
-        Log.v("Net", "Queued new message");
+        Log.v(TAG, "Queued new message");
     }
 
     private static S2CMessage read() {

@@ -15,20 +15,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class WebRTCConn {
-    PeerConnection peerConn;
-    PeerConnectionFactory peerConnFactory;
-    Context context;
+    private static PeerConnection peerConn;
+    private static PeerConnectionFactory peerConnFactory;
+    private static Context appContext;
 
-    EglBase.Context eglBaseContext;
+    private static EglBase.Context eglBaseContext;
 
-    public void initPeerConnFactory(){
-        MediaConstraints mediaConstraints = new MediaConstraints();
-        mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"));
-        mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"));
 
+
+    public static void initPeerConnFactory(){
         //create peerConn factory
         PeerConnectionFactory.InitializationOptions initOptions =
-                PeerConnectionFactory.InitializationOptions.builder(context)
+                PeerConnectionFactory.InitializationOptions.builder(appContext)
                         .createInitializationOptions();
 
         PeerConnectionFactory.initialize(initOptions);
@@ -55,6 +53,17 @@ public class WebRTCConn {
 
         PeerConnection.RTCConfiguration rtcConf = new PeerConnection.RTCConfiguration(iceServers);
 
+    }
+
+    private void call(){
+        MediaConstraints mediaConstraints = new MediaConstraints();
+        mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"));
+        mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "true"));
+        peerConn.createOffer(new CallerSdpObserver(peerConn), mediaConstraints);
+    }
+
+    private void answer(){
+        peerConn.createAnswer(new CalleeSdpObserver(peerConn), new MediaConstraints());
     }
 
 
