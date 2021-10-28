@@ -8,6 +8,8 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.rtcall.net.message.NetMessage;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -30,8 +32,8 @@ public class ServerSocket {
     private static Thread listener;
     private static Thread queueProcesser;
 
-    private static InputStream reader;
-    private static OutputStream writer;
+    private static DataInputStream reader;
+    private static DataOutputStream writer;
 
 
     public static void prepare(Context app){
@@ -47,8 +49,8 @@ public class ServerSocket {
         if (socket == null) {
             try {
                 socket = new Socket(SERVER_HOST, SERVER_PORT);
-                reader = socket.getInputStream();
-                writer = socket.getOutputStream();
+                reader = new DataInputStream(socket.getInputStream());
+                writer = new DataOutputStream(socket.getOutputStream());
                 Log.d(TAG, "Socket created");
             } catch (IOException e) {
                 e.printStackTrace();
@@ -107,19 +109,17 @@ public class ServerSocket {
      */
     public static void queueMessage(NetMessage msg) {
         msgQueue.add(msg);
-        Log.v(TAG, "Queued new message");
+        //Log.v(TAG, "Queued new message");
     }
 
     private static NetMessage read() {
         try {
             byte[] buffer = new byte[4];
             ByteBuffer byteBuffer = ByteBuffer.wrap(buffer);
-            reader.read(buffer);
+            reader.readFully(buffer);
             int size = byteBuffer.getInt();
             byteBuffer = ByteBuffer.allocate(size + 4);
-            reader.read(buffer);
-            byteBuffer.put(buffer);
-            reader.read(byteBuffer.array(), 4, size);
+            reader.readFully(byteBuffer.array());
             return NetMessage.parseMessage(byteBuffer.array());
         } catch (IOException e) {
             e.printStackTrace();

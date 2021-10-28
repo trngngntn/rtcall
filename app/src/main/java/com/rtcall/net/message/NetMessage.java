@@ -2,8 +2,8 @@ package com.rtcall.net.message;
 
 import android.util.Log;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;
@@ -11,38 +11,30 @@ import java.nio.charset.StandardCharsets;
 
 public class NetMessage implements Serializable {
     private static final String TAG = "NET_MESSAGE";
+    private static final Gson gson = new Gson();
 
-
-
-    public static class Client{
+    public static class Client {
         private static final String TAG = "NET_CLIENT_MESSAGE";
 
         public final static int MSG_LOGIN = 0x01;
         public final static int MSG_DIAL = 0x02;
 
         public static NetMessage loginMessage(String username, String password) {
-            JSONObject data = new JSONObject();
-            try {
-                data.put("uid", username);
-                data.put("password", password);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            JsonObject data = new JsonObject();
+            data.addProperty("uid", username);
+            data.addProperty("password", password);
             return new NetMessage(MSG_LOGIN, data);
         }
+
         public static NetMessage dialMessage(String calleeUid) {
-            JSONObject data = new JSONObject();
-            try {
-                data.put("uid", calleeUid);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            JsonObject data = new JsonObject();
+            data.addProperty("uid", calleeUid);
             return new NetMessage(MSG_DIAL, data);
         }
 
     }
 
-    public static class Server{
+    public static class Server {
         private static final String TAG = "NET_SERVER_MESSAGE";
 
         public final static int MSG_BAD_IDENTITY = 0x00;
@@ -53,9 +45,9 @@ public class NetMessage implements Serializable {
         public final static int MSG_REQUEST_CALL = 0x10;
     }
 
-    public static class Relay{
+    public static class Relay {
         private static final String TAG = "NET_RELAY_MESSAGE";
-        
+
         public static final int MSG_CALL_ACCEPTED = 0x20;
         public static final int MSG_CALL_DECLINED = 0x21;
         public static final int MSG_CALL_ENDED = 0x22;
@@ -65,56 +57,52 @@ public class NetMessage implements Serializable {
         public static final int MSG_WEBRTC_ANSWER = 0x32;
 
         public static NetMessage acceptCallMessage() {
-            return new NetMessage(MSG_CALL_ACCEPTED, new JSONObject());
+            JsonObject data = new JsonObject();
+            data.addProperty("timestamp", "");
+            return new NetMessage(MSG_CALL_ACCEPTED, data);
         }
 
         public static NetMessage declineCallMessage() {
-            return new NetMessage(MSG_CALL_DECLINED, new JSONObject());
+            JsonObject data = new JsonObject();
+            data.addProperty("timestamp", "");
+            return new NetMessage(MSG_CALL_DECLINED, data);
         }
 
         public static NetMessage endCallMessage() {
-            return new NetMessage(MSG_CALL_ENDED, new JSONObject());
+            JsonObject data = new JsonObject();
+            data.addProperty("timestamp", "");
+            return new NetMessage(MSG_CALL_ENDED, data);
         }
 
         public static NetMessage candidateMessage(String sdpMid, int sdpMLineIndex, String sdp) {
-            JSONObject data = new JSONObject();
-            try {
-                data.put("sdpMid", sdpMid);
-                data.put("sdpMLineIndex", sdpMLineIndex);
-                data.put("sdp", sdp);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            JsonObject data = new JsonObject();
+            data.addProperty("sdpMid", sdpMid);
+            data.addProperty("sdpMLineIndex", sdpMLineIndex);
+            data.addProperty("sdp", sdp);
             return new NetMessage(MSG_WEBRTC_CANDIDATE, data);
         }
 
         public static NetMessage offerMessage(String description) {
-            JSONObject data = new JSONObject();
-            try {
-                data.put("description", description);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            JsonObject data = new JsonObject();
+            data.addProperty("description", description);
             return new NetMessage(MSG_WEBRTC_OFFER, data);
         }
 
         public static NetMessage answerMessage(String description) {
-            JSONObject data = new JSONObject();
-            try {
-                data.put("description", description);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            JsonObject data = new JsonObject();
+            data.addProperty("description", description);
             return new NetMessage(MSG_WEBRTC_ANSWER, data);
         }
     }
 
     private int type;
-    private JSONObject data;
+    private JsonObject data;
 
-    private NetMessage(){ }
+    private NetMessage() {
+    }
 
-    protected NetMessage(int type, JSONObject data) {
+    protected NetMessage(int type, JsonObject data) {
+        Log.d(TAG, String.format("Message type=%x, length=%d", type, data.toString().getBytes(StandardCharsets.UTF_8).length));
         this.type = type;
         this.data = data;
     }
@@ -123,14 +111,13 @@ public class NetMessage implements Serializable {
         return type;
     }
 
-    public JSONObject getData() {
+    public JsonObject getData() {
         return data;
     }
 
-    public byte[] byteArray(){
-        Log.d(TAG, data.toString());
-        byte[] byteData = data.toString().getBytes(StandardCharsets.UTF_8);
-        int size = byteData.length ;
+    public byte[] byteArray() {
+        byte[] byteData = data.toString().getBytes();
+        int size = byteData.length;
         ByteBuffer buffer = ByteBuffer.allocate(size + 8);
         buffer.putInt(size);
         buffer.putInt(type);
@@ -142,15 +129,10 @@ public class NetMessage implements Serializable {
         ByteBuffer buffer = ByteBuffer.wrap(byteData);
         NetMessage result = new NetMessage();
         result.type = buffer.getInt();
-        Log.v(TAG, "type: " + result.type);
+        //Log.v(TAG, "type: " + result.type);
         String stringData = new String(byteData, 4, byteData.length - 4);
-        Log.v(TAG, stringData);
-        try {
-            result.data = new JSONObject(stringData);
-        } catch (JSONException e) {
-            e.printStackTrace();
-            Log.e("NET", "Invalid message format");
-        }
+        //Log.v(TAG, stringData);
+        result.data = gson.fromJson(stringData, JsonObject.class);
         return result;
     }
 }

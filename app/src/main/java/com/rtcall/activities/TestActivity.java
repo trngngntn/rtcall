@@ -39,26 +39,22 @@ public class TestActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             Log.v("LOG", "Received intent");
             NetMessage msg = (NetMessage) intent.getExtras().get("message");
-            try {
-                switch (msg.getType()) {
-                    case NetMessage.Server.MSG_LOGGED_IN: {
-                        log.setText("\n Logged in with UID: " + msg.getData().getString("uid"));
-                    }
-                    break;
-                    case NetMessage.Server.MSG_REQUEST_CALL: {
-                        //log.setText("\n Request call from UID: " + intent.getExtras().getString("caller"));
-                        Intent i = new Intent(thisActivity, IncomingCallActivity.class);
-                        String caller = msg.getData().getString("caller");
-                        i.putExtra("caller", new User(caller, caller));
-                        startActivity(i);
-                    }
-                    break;
-                    default: {
-                        log.setText("\n Unknown action");
-                    }
+            switch (msg.getType()) {
+                case NetMessage.Server.MSG_LOGGED_IN: {
+                    log.setText("\n Logged in with UID: " + msg.getData().get("uid"));
                 }
-            } catch (JSONException e) {
-                e.printStackTrace();
+                break;
+                case NetMessage.Server.MSG_REQUEST_CALL: {
+                    //log.setText("\n Request call from UID: " + intent.getExtras().getString("caller"));
+                    Intent i = new Intent(thisActivity, IncomingCallActivity.class);
+                    String caller = msg.getData().get("caller").getAsString();
+                    i.putExtra("caller", new User(caller, caller));
+                    startActivity(i);
+                }
+                break;
+                default: {
+                    log.setText("\n Unknown action");
+                }
             }
         }
     }
@@ -99,7 +95,7 @@ public class TestActivity extends AppCompatActivity {
 
                 ServerSocket.queueMessage(NetMessage.Client.dialMessage(calleeUid));
                 Intent i = new Intent(thisActivity, OutgoingCallActivity.class);
-                i.putExtra("callee",new User(calleeUid, calleeUid));
+                i.putExtra("callee", new User(calleeUid, calleeUid));
                 startActivity(i);
             }
         });

@@ -12,6 +12,8 @@ import com.rtcall.net.RTConnection;
 
 import org.webrtc.EglBase;
 
+import java.util.concurrent.Executors;
+
 public class CallActivity extends AppCompatActivity {
     private boolean offerFirst = false;
     private boolean connectionReady = true;
@@ -39,17 +41,26 @@ public class CallActivity extends AppCompatActivity {
         RTConnection.eglBaseContext = eglBase.getEglBaseContext();
         RTConnection.initPeerConnFactory();
 
+
         RTStream.appContext = getApplicationContext();
         RTStream.eglBaseContext = eglBase.getEglBaseContext();
         RTStream.initSurface();
 
         RTStream.prepareLocalMedia();
-        RTStream.startLocalStream();
 
         RTConnection.createPeerConnection();
 
+        RTStream.startLocalStream();
+
         if(offerFirst){
-            RTConnection.offer();
+            Runnable task = new Runnable() {
+                @Override
+                public void run() {
+                    while (connectionReady != true);
+                    RTConnection.offer();
+                }
+            };
+            Executors.newSingleThreadExecutor().execute(task);
         }
 
     }

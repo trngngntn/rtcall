@@ -53,7 +53,8 @@ public class RTConnectionObserver implements PeerConnection.Observer {
 
     @Override
     public void onAddStream(MediaStream mediaStream) {
-        RTStream.remoteMeidaStream = mediaStream;
+        Log.e("OBSERVER", "--------------------------------------------_OnAddStream");
+        RTStream.remoteMediaStream = mediaStream;
         RTStream.startRemoteStream();
     }
 
@@ -74,6 +75,12 @@ public class RTConnectionObserver implements PeerConnection.Observer {
 
     @Override
     public void onAddTrack(RtpReceiver rtpReceiver, MediaStream[] mediaStreams) {
-
+        /*Log.e("OBSERVER", "--------------------------------------------_OnAddTrack");
+        if(mediaStreams!=null && mediaStreams.length > 0){
+            RTStream.remoteMediaStream = mediaStreams[0];
+            RTStream.startRemoteStream();
+        } else {
+            Log.e("OBSERVER", "-------------------------------------Stream not found");
+        }*/
     }
 }
