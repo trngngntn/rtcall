@@ -6,19 +6,12 @@ import android.util.Log;
 
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import com.rtcall.RTCallApplication;
-import com.rtcall.net.message.C2SMessage;
 import com.rtcall.net.message.NetMessage;
-import com.rtcall.net.message.S2CMessage;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
 import java.util.Queue;
@@ -32,7 +25,7 @@ public class ServerSocket {
     private static Socket socket;
     private static Context appContext;
 
-    private static Queue<C2SMessage> msgQueue;
+    private static Queue<NetMessage> msgQueue;
 
     private static Thread listener;
     private static Thread queueProcesser;
@@ -68,7 +61,7 @@ public class ServerSocket {
             while (socket != null && socket.isClosed() == false) {
                 try {
                     if (reader.available() > 0) {
-                        S2CMessage msg = read();
+                        NetMessage msg = read();
 
                         Intent intent = new Intent("SERVICE_MESSAGE");
                         intent.putExtra("message", msg);
@@ -112,12 +105,12 @@ public class ServerSocket {
      *
      * @param msg
      */
-    public static void queueMessage(C2SMessage msg) {
+    public static void queueMessage(NetMessage msg) {
         msgQueue.add(msg);
         Log.v(TAG, "Queued new message");
     }
 
-    private static S2CMessage read() {
+    private static NetMessage read() {
         try {
             byte[] buffer = new byte[4];
             ByteBuffer byteBuffer = ByteBuffer.wrap(buffer);
@@ -127,7 +120,7 @@ public class ServerSocket {
             reader.read(buffer);
             byteBuffer.put(buffer);
             reader.read(byteBuffer.array(), 4, size);
-            return new S2CMessage(NetMessage.parseMessage(byteBuffer.array()));
+            return NetMessage.parseMessage(byteBuffer.array());
         } catch (IOException e) {
             e.printStackTrace();
         }

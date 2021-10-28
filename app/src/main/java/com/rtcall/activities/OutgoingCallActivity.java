@@ -8,53 +8,69 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.telecom.Call;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 
 import com.rtcall.R;
 import com.rtcall.entity.User;
-import com.rtcall.net.message.S2CMessage;
+import com.rtcall.net.RTConnection;
+import com.rtcall.net.message.NetMessage;
+
+import java.util.concurrent.Executors;
 
 public class OutgoingCallActivity extends AppCompatActivity {
 
+    User callee;
+
     TextView txtCalleeName;
     Button btEndCall;
-
-    private class TestBroadcastReceiver extends BroadcastReceiver {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Log.v("LOG", "Received intent");
-            S2CMessage msg = (S2CMessage) intent.getExtras().get("message");
-            try {
-                if(msg.getType() == S2CMessage.MSG_CALL_ACCEPTED){
-                    finish();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-        }
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_outcoming_call);
 
-        User callee = (User) getIntent().getExtras().get("callee");
+        RTConnection.setAppContext(getApplicationContext());
+
+        callee = (User) getIntent().getExtras().get("callee");
 
         txtCalleeName = findViewById(R.id.txt_callee_name);
         btEndCall = findViewById(R.id.bt_end_call);
 
         txtCalleeName.setText(callee.getDisplayName());
+
+        initLocalBroadcastReceiver();
     }
 
-    protected void initLocalBroadcastReceiver(){
-        TestBroadcastReceiver testBrd = new TestBroadcastReceiver();
+    private void initLocalBroadcastReceiver() {
+        BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                NetMessage msg = (NetMessage) intent.getExtras().get("message");
+                Log.v("OUTCALL", "Received message " + msg.getType());
+                switch (msg.getType()) {
+                    case NetMessage.Relay.MSG_CALL_ACCEPTED: {
+                        Intent i = new Intent(getApplicationContext(), CallActivity.class);
+                        i.putExtra("callee", callee);
+                        finish();
+                        startActivity(i);
+                    }
+                    break;
+                    case NetMessage.Relay.MSG_CALL_DECLINED: {
+                        finish();
+                    }
+                    break;
+                    case NetMessage.Relay.MSG_CALL_ENDED: {
+                        finish();
+                    }
+                    break;
+                }
+            }
+        };
         IntentFilter filter = new IntentFilter();
         filter.addAction("SERVICE_MESSAGE");
-        LocalBroadcastManager.getInstance(this).registerReceiver(testBrd, filter);
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(broadcastReceiver, filter);
     }
 }

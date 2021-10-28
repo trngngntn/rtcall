@@ -1,155 +1,56 @@
 package com.rtcall.activities;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.camera.core.Camera;
-import androidx.camera.core.CameraSelector;
-import androidx.camera.core.Preview;
-import androidx.camera.lifecycle.ProcessCameraProvider;
-import androidx.camera.view.PreviewView;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import android.Manifest;
-import android.app.Activity;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.SurfaceView;
+import android.widget.Button;
 
-import com.google.common.util.concurrent.ListenableFuture;
 import com.rtcall.R;
-import com.rtcall.net.ServerSocket;
-import com.rtcall.net.message.S2CMessage;
-import com.rtcall.services.RTStreamService;
+import com.rtcall.entity.User;
+import com.rtcall.net.RTStream;
+import com.rtcall.net.RTConnection;
 
-import org.webrtc.AudioSource;
-import org.webrtc.AudioTrack;
-import org.webrtc.Camera1Enumerator;
-import org.webrtc.Camera2Enumerator;
-import org.webrtc.CameraEnumerator;
 import org.webrtc.EglBase;
-import org.webrtc.MediaConstraints;
-import org.webrtc.MediaStream;
-import org.webrtc.PeerConnectionFactory;
-import org.webrtc.SurfaceTextureHelper;
-import org.webrtc.SurfaceViewRenderer;
-import org.webrtc.VideoCapturer;
-import org.webrtc.VideoFrame;
-import org.webrtc.VideoSink;
-import org.webrtc.VideoSource;
-import org.webrtc.VideoTrack;
-
-import java.util.concurrent.ExecutionException;
 
 public class CallActivity extends AppCompatActivity {
-    String callerUid;
+    private boolean offerFirst = false;
+    private boolean connectionReady = true;
 
-    boolean isCaller = false;
+    private User otherPeer;
+    private EglBase eglBase;
 
-    Activity thisActivity;
-
-    PreviewView srfRecord;
-    SurfaceView srfPlay;
-    SurfaceViewRenderer srfPlayRenderer;
-
-
-    EglBase eglBase;
-
-    private class TestBroadcastReceiver extends BroadcastReceiver {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Log.v("LOG", "Received intent");
-            if (intent.getAction().equals("SERVICE_MESSAGE")) {
-                S2CMessage msg = (S2CMessage) intent.getExtras().get("message");
-                if (msg.getType() == S2CMessage.MSG_PEER_ADDR && isCaller) {
-
-                }
-            } else {
-                initiateConnection();
-            }
-        }
-    }
+    private Button btEndCall;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        thisActivity = this;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_call);
-        srfRecord = findViewById(R.id.srf_record);
 
-        callerUid = getIntent().getExtras().getString("caller");
-        Log.v("CALL_ACT", "-----------------Ccaller: " + callerUid);
+        RTStream.srfLocalStream= findViewById(R.id.srf_local_stream);
+        RTStream.srfRemoteStream = findViewById(R.id.srf_remote_stream);
+        btEndCall = findViewById(R.id.bt_end_call);
 
-        // local broadcast receiver
-        CallActivity.TestBroadcastReceiver testBrd = new CallActivity.TestBroadcastReceiver();
-        IntentFilter filter = new IntentFilter();
-        filter.addAction("SERVICE_MESSAGE");
-        LocalBroadcastManager.getInstance(this).registerReceiver(testBrd, filter);
+        Object temp = getIntent().getExtras().get("caller");
+        otherPeer = (User) (temp == null ?  getIntent().getExtras().get("callee") : temp);
+        offerFirst = temp != null;
 
         //webrtc related
         eglBase = EglBase.create();
-        srfPlayRenderer.setMirror(true);
-        srfPlayRenderer.setEnableHardwareScaler(true);
-        srfPlayRenderer.init(eglBase.getEglBaseContext(), null);
+        RTConnection.eglBaseContext = eglBase.getEglBaseContext();
+        RTConnection.initPeerConnFactory();
 
+        RTStream.appContext = getApplicationContext();
+        RTStream.eglBaseContext = eglBase.getEglBaseContext();
+        RTStream.initSurface();
 
-    }
+        RTStream.prepareLocalMedia();
+        RTStream.startLocalStream();
 
-    ListenableFuture<ProcessCameraProvider> pcp;
+        RTConnection.createPeerConnection();
 
-    private void initiateConnection() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, PackageManager.PERMISSION_GRANTED);
+        if(offerFirst){
+            RTConnection.offer();
         }
-        pcp = ProcessCameraProvider.getInstance(this);
-        pcp.addListener(() -> {
-            try {
-                ProcessCameraProvider cameraProvider = pcp.get();
-                bindPreview(cameraProvider);
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }, ContextCompat.getMainExecutor(this));
 
-        Intent startStreamServiceIntent = new Intent(this, RTStreamService.class);
-        startService(startStreamServiceIntent);
     }
-
-    private void bindPreview(@NonNull ProcessCameraProvider cameraProvider) {
-        Preview preview = new Preview.Builder()
-                .build();
-
-        preview.setSurfaceProvider(srfRecord.getSurfaceProvider());
-
-        CameraSelector cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA;
-
-        //binding camera
-        try {
-            cameraProvider.unbindAll();
-            Camera camera = cameraProvider.bindToLifecycle(this, cameraSelector, preview);
-        } catch (Exception e) {
-
-        }
-    }
-
-    private void initSurfaces() {
-        EglBase eglBase = EglBase.create();
-        //srfPlay.init();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        //cameraExecutor.shutdown();
-    }
-
 }

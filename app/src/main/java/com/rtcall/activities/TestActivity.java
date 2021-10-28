@@ -18,8 +18,7 @@ import android.widget.Toast;
 import com.rtcall.R;
 import com.rtcall.entity.User;
 import com.rtcall.net.ServerSocket;
-import com.rtcall.net.message.C2SMessage;
-import com.rtcall.net.message.S2CMessage;
+import com.rtcall.net.message.NetMessage;
 import com.rtcall.services.RTCallService;
 
 import org.json.JSONException;
@@ -39,17 +38,18 @@ public class TestActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.v("LOG", "Received intent");
-            S2CMessage msg = (S2CMessage) intent.getExtras().get("message");
+            NetMessage msg = (NetMessage) intent.getExtras().get("message");
             try {
                 switch (msg.getType()) {
-                    case S2CMessage.MSG_LOGGED_IN: {
+                    case NetMessage.Server.MSG_LOGGED_IN: {
                         log.setText("\n Logged in with UID: " + msg.getData().getString("uid"));
                     }
                     break;
-                    case S2CMessage.MSG_REQUEST_CALL: {
+                    case NetMessage.Server.MSG_REQUEST_CALL: {
                         //log.setText("\n Request call from UID: " + intent.getExtras().getString("caller"));
                         Intent i = new Intent(thisActivity, IncomingCallActivity.class);
-                        i.putExtra("caller", msg.getData().getString("caller"));
+                        String caller = msg.getData().getString("caller");
+                        i.putExtra("caller", new User(caller, caller));
                         startActivity(i);
                     }
                     break;
@@ -68,9 +68,9 @@ public class TestActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         thisActivity = this;
+        ServerSocket.prepare(getApplicationContext());
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test);
-        getSupportActionBar().hide();
 
         Intent service = new Intent(this, RTCallService.class);
         startService(service);
@@ -87,7 +87,7 @@ public class TestActivity extends AppCompatActivity {
             if (edtUID.getText().toString().equals("")) {
                 Toast.makeText(this.getBaseContext(), "Invalid UID", Toast.LENGTH_SHORT).show();
             } else {
-                ServerSocket.queueMessage(C2SMessage.createLoginMessage(edtUID.getText().toString(), ""));
+                ServerSocket.queueMessage(NetMessage.Client.loginMessage(edtUID.getText().toString(), ""));
             }
         });
 
@@ -97,7 +97,7 @@ public class TestActivity extends AppCompatActivity {
             } else {
                 String calleeUid = edtDial.getText().toString();
 
-                ServerSocket.queueMessage(C2SMessage.createDialMessage(calleeUid));
+                ServerSocket.queueMessage(NetMessage.Client.dialMessage(calleeUid));
                 Intent i = new Intent(thisActivity, OutgoingCallActivity.class);
                 i.putExtra("callee",new User(calleeUid, calleeUid));
                 startActivity(i);

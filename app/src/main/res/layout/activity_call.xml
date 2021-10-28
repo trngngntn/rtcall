@@ -6,8 +6,8 @@
     android:layout_height="match_parent"
     tools:context=".activities.CallActivity">
 
-    <SurfaceView
-        android:id="@+id/srf_stream"
+    <org.webrtc.SurfaceViewRenderer
+        android:id="@+id/srf_remote_stream"
         android:layout_width="0dp"
         android:layout_height="523dp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -29,18 +29,18 @@
             android:id="@+id/bt_end_call"
             android:layout_width="60dp"
             android:layout_height="60dp"
+            android:layout_marginEnd="36dp"
             android:background="@drawable/bt_decline_call"
             app:backgroundTint="@null"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <androidx.camera.view.PreviewView
-            android:id="@+id/srf_record"
+        <org.webrtc.SurfaceViewRenderer
+            android:id="@+id/srf_local_stream"
             android:layout_width="135dp"
             android:layout_height="200dp"
-            android:layout_marginStart="16dp"
+            android:layout_marginStart="24dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />

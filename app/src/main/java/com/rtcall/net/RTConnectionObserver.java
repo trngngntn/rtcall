@@ -2,21 +2,18 @@ package com.rtcall.net;
 
 import android.util.Log;
 
-import com.rtcall.RTCallApplication;
-import com.rtcall.net.message.C2SMessage;
+import com.rtcall.net.message.NetMessage;
 
 import org.webrtc.DataChannel;
 import org.webrtc.IceCandidate;
 import org.webrtc.MediaStream;
 import org.webrtc.PeerConnection;
 import org.webrtc.RtpReceiver;
-import org.webrtc.SdpObserver;
-import org.webrtc.SessionDescription;
 
-public class WebRTCConnObserver implements PeerConnection.Observer {
+public class RTConnectionObserver implements PeerConnection.Observer {
     private static final String TAG = "NET_OBSERVER";
 
-    public WebRTCConnObserver() {
+    public RTConnectionObserver() {
     }
 
     @Override
@@ -42,7 +39,7 @@ public class WebRTCConnObserver implements PeerConnection.Observer {
     @Override
     public void onIceCandidate(IceCandidate iceCandidate) {
         Log.d(TAG, "IceCandidate");
-        C2SMessage msg = C2SMessage.createCandidateMessage(
+        NetMessage msg = NetMessage.Relay.candidateMessage(
                 iceCandidate.sdpMid,
                 iceCandidate.sdpMLineIndex,
                 iceCandidate.sdp);
@@ -56,7 +53,8 @@ public class WebRTCConnObserver implements PeerConnection.Observer {
 
     @Override
     public void onAddStream(MediaStream mediaStream) {
-        //application.getStream().setRemoteMeidaStream(mediaStream);
+        RTStream.remoteMeidaStream = mediaStream;
+        RTStream.startRemoteStream();
     }
 
     @Override

@@ -1,22 +1,17 @@
 package com.rtcall.net;
 
-import com.rtcall.net.message.C2SMessage;
+import com.rtcall.net.message.NetMessage;
 
-import org.webrtc.PeerConnection;
 import org.webrtc.SdpObserver;
 import org.webrtc.SessionDescription;
 
 public class CallerSdpObserver implements SdpObserver {
-    PeerConnection peerConn;
-
-    public CallerSdpObserver(PeerConnection peerConn) {
-        this.peerConn = peerConn;
-    }
 
     @Override
     public void onCreateSuccess(SessionDescription sessionDescription) {
-        peerConn.setLocalDescription(this, sessionDescription);
-        ServerSocket.queueMessage(C2SMessage.createOfferMessage(sessionDescription.description));
+
+        RTConnection.peerConn.setLocalDescription(this, sessionDescription);
+        ServerSocket.queueMessage(NetMessage.Relay.answerMessage(sessionDescription.description));
     }
 
     @Override

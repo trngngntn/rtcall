@@ -12,12 +12,14 @@
         style="@android:style/Widget.Button"
         android:layout_width="60dp"
         android:layout_height="60dp"
+        android:layout_marginBottom="64dp"
         android:background="@drawable/bt_decline_call"
         app:backgroundTint="@null"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        tools:ignore="SpeakableTextPresentCheck,SpeakableTextPresentCheck"
-        tools:layout_editor_absoluteY="607dp" />
+        tools:ignore="SpeakableTextPresentCheck,SpeakableTextPresentCheck" />
 
     <TextView
         android:id="@+id/txt_callee_name"

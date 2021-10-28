@@ -2,8 +2,6 @@ package com.rtcall.net;
 
 import android.content.Context;
 
-import com.rtcall.RTCallApplication;
-
 import org.webrtc.AudioSource;
 import org.webrtc.AudioTrack;
 import org.webrtc.Camera1Enumerator;
@@ -12,7 +10,6 @@ import org.webrtc.CameraEnumerator;
 import org.webrtc.EglBase;
 import org.webrtc.MediaConstraints;
 import org.webrtc.MediaStream;
-import org.webrtc.PeerConnectionFactory;
 import org.webrtc.SurfaceTextureHelper;
 import org.webrtc.SurfaceViewRenderer;
 import org.webrtc.VideoCapturer;
@@ -23,7 +20,7 @@ import org.webrtc.VideoTrack;
 
 public class RTStream {
 
-    private class MyVideoSink implements VideoSink {
+    private static class MyVideoSink implements VideoSink {
         private VideoSink target;
 
         @Override
@@ -39,35 +36,27 @@ public class RTStream {
         }
     }
 
-    Context context;
-    RTCallApplication application;
+    public static Context appContext;
 
-    VideoCapturer videoCapturer;
+    private static VideoCapturer videoCapturer;
 
-    VideoSource videoSource;
-    AudioSource audioSource;
+    private static VideoSource videoSource;
+    private static AudioSource audioSource;
 
-    SurfaceViewRenderer srfLocalVideo;
-    SurfaceViewRenderer srfRemoteVideo;
+    private static VideoTrack localVideoTrack;
+    private static AudioTrack localAudioTrack;
 
-    VideoTrack localVideoTrack;
-    AudioTrack localAudioTrack;
-    MediaStream localMediaStream;
+    public static SurfaceViewRenderer srfLocalStream;
+    public static SurfaceViewRenderer srfRemoteStream;
 
-    MediaStream remoteMeidaStream;
+    public static MediaStream localMediaStream;
+    public static MediaStream remoteMeidaStream;
+    public static EglBase.Context eglBaseContext;
 
-    EglBase.Context eglBaseContext;
-
-    PeerConnectionFactory peerConnFactory;
-
-    public RTStream(){
-        
-    }
-
-    public void prepareLocalMedia() {
+    public static void prepareLocalMedia() {
         CameraEnumerator camEnumerator;
-        if (Camera2Enumerator.isSupported(context)) {
-            camEnumerator = new Camera2Enumerator(context);
+        if (Camera2Enumerator.isSupported(appContext)) {
+            camEnumerator = new Camera2Enumerator(appContext);
         } else {
             camEnumerator = new Camera1Enumerator(true);
         }
@@ -85,28 +74,44 @@ public class RTStream {
 
         SurfaceTextureHelper surfaceTextureHelper = SurfaceTextureHelper.create("CaptureThread", eglBaseContext);
 
-        videoSource = peerConnFactory.createVideoSource(videoCapturer.isScreencast());
-        videoCapturer.initialize(surfaceTextureHelper, application, videoSource.getCapturerObserver());
-        videoCapturer.startCapture(1280, 720, 30);/*W,H,fps*/
-        localVideoTrack = peerConnFactory.createVideoTrack("ID", videoSource);
+        videoSource = RTConnection.peerConnFactory.createVideoSource(videoCapturer.isScreencast());
+        videoCapturer.initialize(surfaceTextureHelper, appContext, videoSource.getCapturerObserver());
+        videoCapturer.startCapture(1280, 720, 24);/*W,H,fps*/
+        localVideoTrack = RTConnection.peerConnFactory.createVideoTrack("ID", videoSource);
         localVideoTrack.setEnabled(true);
-        MyVideoSink sink = new MyVideoSink();
-        localVideoTrack.addSink(sink);
-        sink.setTarget(srfLocalVideo);
+        MyVideoSink localSink = new MyVideoSink();
+        localVideoTrack.addSink(localSink);
+        localSink.setTarget(srfLocalStream);
 
         MediaConstraints audioContraints = new MediaConstraints();
-        audioSource = peerConnFactory.createAudioSource(audioContraints);
-        localAudioTrack = peerConnFactory.createAudioTrack("ID", audioSource);
+        audioSource = RTConnection.peerConnFactory.createAudioSource(audioContraints);
+        localAudioTrack = RTConnection.peerConnFactory.createAudioTrack("ID", audioSource);
     }
 
-    public void startLocalStream() {
-        localMediaStream = peerConnFactory.createLocalMediaStream("LABEL");
+    public static void initSurface(){
+        srfLocalStream.setMirror(true);
+        srfLocalStream.setEnableHardwareScaler(true);
+        srfLocalStream.init(eglBaseContext, null);
+
+        srfRemoteStream.setMirror(true);
+        srfRemoteStream.setEnableHardwareScaler(true);
+        srfRemoteStream.init(eglBaseContext, null);
+    }
+
+    public static void startLocalStream() {
+        localMediaStream = RTConnection.peerConnFactory.createLocalMediaStream("LABEL");
         localMediaStream.addTrack(localAudioTrack);
         localMediaStream.addTrack(localVideoTrack);
     }
 
-    public void setRemoteMeidaStream(MediaStream stream){
-        this.remoteMeidaStream = stream;
-    }
+    public static void startRemoteStream() {
+        VideoTrack remoteVideoTrack = remoteMeidaStream.videoTracks.get(0);
+        AudioTrack remoteAudioTrack = remoteMeidaStream.audioTracks.get(0);
+        remoteVideoTrack.setEnabled(true);
+        remoteAudioTrack.setEnabled(true);
+        MyVideoSink remoteSink = new MyVideoSink();
+        remoteVideoTrack.addSink(remoteSink);
+        remoteSink.setTarget(srfRemoteStream);
 
+    }
 }

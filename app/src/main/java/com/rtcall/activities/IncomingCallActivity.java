@@ -16,45 +16,25 @@ import android.widget.TextView;
 
 import com.rtcall.R;
 import com.rtcall.entity.User;
+import com.rtcall.net.RTConnection;
 import com.rtcall.net.ServerSocket;
-import com.rtcall.net.message.C2SMessage;
-import com.rtcall.net.message.S2CMessage;
+import com.rtcall.net.message.NetMessage;
 
 public class IncomingCallActivity extends AppCompatActivity {
 
+    User caller;
+    Vibrator vibrator;
 
     TextView txtCaller;
     Button btAccept;
     Button btDecline;
 
-    User caller;
-
-    Vibrator vibrator;
-
-    Activity thisActivity;
-
-    private class TestBroadcastReceiver extends BroadcastReceiver {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Log.v("LOG", "Received intent");
-            S2CMessage msg = (S2CMessage) intent.getExtras().get("message");
-            try {
-                if(msg.getType() == S2CMessage.MSG_CALL_ENDED){
-                    finish();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-        }
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        thisActivity = this;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_incoming_call);
+
+        RTConnection.setAppContext(getApplicationContext());
 
         caller = (User) getIntent().getExtras().get("caller");
 
@@ -65,15 +45,14 @@ public class IncomingCallActivity extends AppCompatActivity {
         txtCaller.setText(caller.getDisplayName());
 
         btAccept.setOnClickListener(view -> {
-            Intent i = new Intent(thisActivity, CallActivity.class);
+            Intent i = new Intent(getApplicationContext(), CallActivity.class);
             i.putExtra("caller", caller);
-            Log.v("CALL_ACT", "-----------------ICcaller: " + caller.getUid());
+            ServerSocket.queueMessage(NetMessage.Relay.acceptCallMessage());
             startActivity(i);
-            //ServerSocket.ping(thisActivity, callerUid);
         });
 
         btDecline.setOnClickListener(view -> {
-            ServerSocket.queueMessage(C2SMessage.createDeclineCallMessage(""));
+            ServerSocket.queueMessage(NetMessage.Relay.declineCallMessage());
             finish();
         });
 
@@ -82,15 +61,25 @@ public class IncomingCallActivity extends AppCompatActivity {
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         long[] pattern = {0, 500, 350, 500, 350, 500, 1000};
         vibrator.vibrate(pattern, 0);
-
-
     }
 
-    protected void initLocalBroadcastReceiver(){
-        TestBroadcastReceiver testBrd = new IncomingCallActivity.TestBroadcastReceiver();
+    private void initLocalBroadcastReceiver() {
+        BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Log.v("LOG", "Received intent");
+                NetMessage msg = (NetMessage) intent.getExtras().get("message");
+                switch (msg.getType()) {
+                    case NetMessage.Relay.MSG_CALL_ENDED: {
+                        finish();
+                    }
+                    break;
+                }
+            }
+        };
         IntentFilter filter = new IntentFilter();
         filter.addAction("SERVICE_MESSAGE");
-        LocalBroadcastManager.getInstance(this).registerReceiver(testBrd, filter);
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(broadcastReceiver, filter);
     }
 
     @Override
