@@ -19,7 +19,6 @@ import com.rtcall.net.message.NetMessage;
 
 public class RTCallApplication extends Application implements CameraXConfig.Provider {
     public static RTCallApplication application;
-    public User contacts[];
     @NonNull
     @Override
     public CameraXConfig getCameraXConfig() {

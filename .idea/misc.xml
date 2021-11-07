@@ -5,7 +5,9 @@
       <map>
         <entry key="app/src/main/res/drawable-v24/bt_accept_call.xml" value="0.2" />
         <entry key="app/src/main/res/drawable-v24/ic_baseline_call_end_24.xml" value="0.39114583333333336" />
+        <entry key="app/src/main/res/drawable-v24/ic_baseline_phone_24.xml" value="0.30833333333333335" />
         <entry key="app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.39114583333333336" />
+        <entry key="app/src/main/res/drawable/bg_floating_card.xml" value="0.30833333333333335" />
         <entry key="app/src/main/res/drawable/bg_gradient.xml" value="0.39114583333333336" />
         <entry key="app/src/main/res/drawable/bg_input.xml" value="0.39114583333333336" />
         <entry key="app/src/main/res/drawable/bg_nav_bar.xml" value="0.315625" />
@@ -13,6 +15,7 @@
         <entry key="app/src/main/res/drawable/bg_under.xml" value="0.39114583333333336" />
         <entry key="app/src/main/res/drawable/bt_push.xml" value="0.34479166666666666" />
         <entry key="app/src/main/res/drawable/ic_launcher_background.xml" value="0.39114583333333336" />
+        <entry key="app/src/main/res/drawable/ic_round_check_circle_24.xml" value="0.30833333333333335" />
         <entry key="app/src/main/res/layout/activity_call.xml" value="0.18" />
         <entry key="app/src/main/res/layout/activity_contact_list.xml" value="0.3695652173913043" />
         <entry key="app/src/main/res/layout/activity_incoming_call.xml" value="0.25" />
@@ -23,13 +26,18 @@
         <entry key="app/src/main/res/layout/activity_splash.xml" value="0.25" />
         <entry key="app/src/main/res/layout/activity_test.xml" value="0.276268115942029" />
         <entry key="app/src/main/res/layout/dialog_add_contact.xml" value="0.33" />
+        <entry key="app/src/main/res/layout/dialog_registered.xml" value="0.5" />
         <entry key="app/src/main/res/layout/fragment_contact.xml" value="0.42083333333333334" />
         <entry key="app/src/main/res/layout/fragment_contact_list.xml" value="0.24583333333333332" />
+        <entry key="app/src/main/res/layout/fragment_notification.xml" value="0.2484375" />
         <entry key="app/src/main/res/layout/fragment_settings.xml" value="0.34646739130434784" />
         <entry key="app/src/main/res/layout/preference.xml" value="0.35054347826086957" />
         <entry key="app/src/main/res/layout/prefs.xml" value="1.0" />
         <entry key="app/src/main/res/layout/row_item_add_contact.xml" value="0.5" />
         <entry key="app/src/main/res/layout/row_item_contact.xml" value="0.67" />
+        <entry key="app/src/main/res/layout/row_item_contact_pending.xml" value="0.2484375" />
+        <entry key="app/src/main/res/layout/row_item_notif_contact_pending.xml" value="0.67" />
+        <entry key="app/src/main/res/layout/row_item_notif_missed_call.xml" value="0.5" />
         <entry key="app/src/main/res/menu/bottom_nav_menu.xml" value="0.253125" />
         <entry key="app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.39114583333333336" />
         <entry key="app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.39114583333333336" />

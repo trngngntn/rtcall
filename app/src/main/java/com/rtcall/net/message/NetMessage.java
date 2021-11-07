@@ -33,7 +33,7 @@ public class NetMessage implements Serializable {
 
         public static NetMessage registerMessage(String display, String username, String password){
             JsonObject data = new JsonObject();
-            data.addProperty("display", display);
+            data.addProperty("displayName", display);
             data.addProperty("username", username);
             data.addProperty("password", password);
             return new NetMessage(MSG_REGISTER, data);

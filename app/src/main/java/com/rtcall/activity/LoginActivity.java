@@ -69,7 +69,9 @@ public class LoginActivity extends AppCompatActivity {
                         Intent homeIntent = new Intent(getApplication(), MainActivity.class);
                         finish();
                         startActivity(homeIntent);
+                        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                     }
+                    break;
                     case NetMessage.Server.MSG_BAD_IDENTITY: {
                         txtError.setVisibility(View.VISIBLE);
                     }

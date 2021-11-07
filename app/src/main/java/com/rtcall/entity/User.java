@@ -3,6 +3,8 @@ package com.rtcall.entity;
 import java.io.Serializable;
 
 public class User implements Serializable {
+    public static User contacts[];
+
     private String uid;
     private String displayName;
     private boolean online;
@@ -26,5 +28,14 @@ public class User implements Serializable {
 
     public boolean isOnline(){
         return online;
+    }
+
+    public static User getUser(String username){
+        for(User u: contacts){
+            if (u.getUid().equals(username)){
+                return u;
+            }
+        }
+        return null;
     }
 }

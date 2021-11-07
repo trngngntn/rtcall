@@ -6,13 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,6 +15,12 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.gson.JsonArray;
 import com.rtcall.R;
 import com.rtcall.RTCallApplication;
@@ -29,65 +28,7 @@ import com.rtcall.entity.User;
 import com.rtcall.net.ServerSocket;
 import com.rtcall.net.message.NetMessage;
 
-public class ContactFragment extends Fragment {
-
-    public static class AddContactDialog extends Dialog {
-
-        private TextView txtError;
-
-        public AddContactDialog(@NonNull Context context) {
-            super(context);
-        }
-
-        @Override
-        protected void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            setContentView(R.layout.dialog_add_contact);
-
-
-            Button btAdd = findViewById(R.id.bt_add);
-            txtError = findViewById(R.id.txt_error_add_contact);
-            EditText edtUsername = findViewById(R.id.edt_add_username);
-
-            btAdd.setOnClickListener(view -> {
-                if("".equals(edtUsername.getText().toString())){
-                    txtError.setText("Username is empty. Please enter a correct username.");
-                    txtError.setVisibility(View.VISIBLE);
-                } else {
-                    txtError.setVisibility(View.INVISIBLE);
-                    ServerSocket.queueMessage(NetMessage.Client.addContactMessage(edtUsername.getText().toString()));
-                }
-            });
-
-            initLocalBroadcastReceiver();
-        }
-
-        private void initLocalBroadcastReceiver() {
-            BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
-                @Override
-                public void onReceive(Context context, Intent intent) {
-                    Log.v("LOG", "Received intent");
-                    NetMessage msg = (NetMessage) intent.getExtras().get("message");
-                    switch (msg.getType()) {
-                        case NetMessage.Server.MSG_CONTACT_INVALID: {
-                            txtError.setText("Username is incorrect.");
-                            txtError.setVisibility(View.VISIBLE);
-                        }
-                        break;
-                        case NetMessage.Server.MSG_CONTACT_PENDING: {
-                            dismiss();
-                            Toast.makeText(getOwnerActivity(), "Contact request sent.", Toast.LENGTH_SHORT);
-                        }
-                        break;
-                    }
-                }
-            };
-            IntentFilter filter = new IntentFilter();
-            filter.addAction("SERVICE_MESSAGE");
-            LocalBroadcastManager.getInstance(getContext()).registerReceiver(broadcastReceiver, filter);
-        }
-    }
-
+public class NotificationFragment extends Fragment {
     private RTCallApplication app;
 
     private View rootView;
@@ -127,7 +68,7 @@ public class ContactFragment extends Fragment {
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-                        if(jsonArray != null){
+                        if (jsonArray != null) {
                             app.contacts = new User[jsonArray.size()];
                             for (int i = 0; i < jsonArray.size(); i++) {
                                 app.contacts[i] = new User(

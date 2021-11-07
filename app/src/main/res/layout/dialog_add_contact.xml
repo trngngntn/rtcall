@@ -4,10 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="320dp"
-    android:background="@drawable/bg_row_items">
+    android:background="@drawable/bg_floating_card">
 
     <EditText
-        android:id="@+id/edt_login_usernname"
+        android:id="@+id/edt_add_username"
         android:layout_width="match_parent"
         android:layout_height="40dp"
         android:layout_marginStart="24dp"
@@ -24,7 +24,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/bt_login"
+        android:id="@+id/bt_add"
         android:layout_width="match_parent"
         android:layout_height="40dp"
         android:layout_marginStart="24dp"
@@ -35,7 +35,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/edt_login_usernname" />
+        app:layout_constraintTop_toBottomOf="@+id/edt_add_username" />
 
     <TextView
         android:id="@+id/label_login_username"
@@ -43,8 +43,8 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="4dp"
         android:text="Username"
-        app:layout_constraintBottom_toTopOf="@+id/edt_login_usernname"
-        app:layout_constraintStart_toStartOf="@+id/edt_login_usernname" />
+        app:layout_constraintBottom_toTopOf="@+id/edt_add_username"
+        app:layout_constraintStart_toStartOf="@+id/edt_add_username" />
 
     <TextView
         android:id="@+id/txt_title"
@@ -52,9 +52,20 @@
         android:layout_height="wrap_content"
         android:text="Add Contact"
         android:textSize="24sp"
-        app:layout_constraintBottom_toTopOf="@+id/edt_login_usernname"
+        app:layout_constraintBottom_toTopOf="@+id/edt_add_username"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/txt_error_add_contact"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="[Error]"
+        android:textColor="#FF3B2D"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@+id/bt_add"
+        app:layout_constraintStart_toStartOf="@+id/edt_add_username"
+        app:layout_constraintTop_toBottomOf="@+id/edt_add_username" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
