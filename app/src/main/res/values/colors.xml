@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="background">#0C88EC</color>
-    <color name="text">#E8E8E8</color>
+    <color name="accent">#0C88EC</color>
+    <color name="light_yellow">#FFEA21</color>
+    <color name="text_light">#5C513F</color>
+    <color name="text_dark">#E8E8E8</color>
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>

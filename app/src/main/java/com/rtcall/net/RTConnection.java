@@ -32,14 +32,13 @@ public class RTConnection {
 
     public static PeerConnection peerConn;
     public static PeerConnectionFactory peerConnFactory;
-    private static Context appContext;
 
     public static EglBase.Context eglBaseContext;
 
     private static ExecutorService wait;
 
     public static void setAppContext(Context context) {
-        appContext = context;
+        //appContext = context;
         initLocalReceiver();
     }
 
@@ -92,13 +91,13 @@ public class RTConnection {
         };
         IntentFilter filter = new IntentFilter();
         filter.addAction("SERVICE_MESSAGE");
-        LocalBroadcastManager.getInstance(appContext).registerReceiver(broadcastReceiver, filter);
+        LocalBroadcastManager.getInstance(ServerSocket.appContext).registerReceiver(broadcastReceiver, filter);
     }
 
     public static PeerConnectionFactory initPeerConnFactory() {
         //create peerConn factory
         PeerConnectionFactory.InitializationOptions initOptions =
-                PeerConnectionFactory.InitializationOptions.builder(appContext)
+                PeerConnectionFactory.InitializationOptions.builder(ServerSocket.appContext)
                         .setEnableInternalTracer(true)
                         .setFieldTrials("WebRTC-H264HighProfile/Enabled/")
                         .createInitializationOptions();

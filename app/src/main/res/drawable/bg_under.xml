@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:height="32dp"
+        android:drawable="@drawable/bg_gradient">
+    </item>
+    <item android:top="32dp">
+        <shape>
+            <solid android:color="?android:colorBackground">
+
+            </solid>
+        </shape>
+    </item>
+</layer-list>

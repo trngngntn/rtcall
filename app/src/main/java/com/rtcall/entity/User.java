@@ -5,6 +5,7 @@ import java.io.Serializable;
 public class User implements Serializable {
     private String uid;
     private String displayName;
+    private boolean online;
 
     public User(String uid, String displayName) {
         this.uid = uid;
@@ -17,5 +18,13 @@ public class User implements Serializable {
 
     public String getDisplayName() {
         return displayName;
+    }
+
+    public void setStatus(boolean online){
+        this.setStatus(online);
+    }
+
+    public boolean isOnline(){
+        return online;
     }
 }

@@ -17,13 +17,26 @@ public class NetMessage implements Serializable {
         private static final String TAG = "NET_CLIENT_MESSAGE";
 
         public final static int MSG_LOGIN = 0x01;
-        public final static int MSG_DIAL = 0x02;
+        public final static int MSG_REGISTER = 0x02;
+        public final static int MSG_DIAL = 0x03;
+        public final static int MSG_REQ_CONTACT = 0x04;
+        public final static int MSG_ADD_CONTACT = 0x05;
+        public final static int MSG_APPROVE_CONTACT = 0x06;
+        public final static int MSG_REJECT_CONTACT = 0x07;
 
         public static NetMessage loginMessage(String username, String password) {
             JsonObject data = new JsonObject();
-            data.addProperty("uid", username);
+            data.addProperty("username", username);
             data.addProperty("password", password);
             return new NetMessage(MSG_LOGIN, data);
+        }
+
+        public static NetMessage registerMessage(String display, String username, String password){
+            JsonObject data = new JsonObject();
+            data.addProperty("display", display);
+            data.addProperty("username", username);
+            data.addProperty("password", password);
+            return new NetMessage(MSG_REGISTER, data);
         }
 
         public static NetMessage dialMessage(String calleeUid) {
@@ -32,6 +45,16 @@ public class NetMessage implements Serializable {
             return new NetMessage(MSG_DIAL, data);
         }
 
+        public static NetMessage reqContactMessage() {
+            JsonObject data = new JsonObject();
+            return new NetMessage(MSG_REQ_CONTACT, data);
+        }
+
+        public static NetMessage addContactMessage(String username) {
+            JsonObject data = new JsonObject();
+            data.addProperty("uid", username);
+            return new NetMessage(MSG_ADD_CONTACT, data);
+        }
     }
 
     public static class Server {
@@ -39,10 +62,20 @@ public class NetMessage implements Serializable {
 
         public final static int MSG_BAD_IDENTITY = 0x00;
         public final static int MSG_LOGGED_IN = 0x01;
-        public final static int MSG_CONTACT_LIST = 0x02;
-        public final static int MSG_FRIEND_REQUEST = 0x03;
 
-        public final static int MSG_REQUEST_CALL = 0x10;
+        public static final int MSG_REGISTERED = 0x02;
+        public static final int MSG_REGISTER_FAILED = 0x03;
+
+        public final static int MSG_CONTACT_LIST = 0x04;
+        public final static int MSG_CONTACT_INVALID = 0x05;
+        public final static int MSG_CONTACT_PENDING = 0x06;
+        public final static int MSG_CONTACT_APPROVED = 0x07;
+
+        public final static int MSG_ALL_NOTIF = 0x08;
+        public final static int MSG_UNREAD_NOTIF = 0x09;
+        public final static int MSG_NEW_NOTIF = 0x10;
+
+        public final static int MSG_REQUEST_CALL = 0x11;
     }
 
     public static class Relay {

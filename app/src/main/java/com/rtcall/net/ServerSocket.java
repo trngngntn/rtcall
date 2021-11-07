@@ -6,6 +6,8 @@ import android.util.Log;
 
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.rtcall.activity.IncomingCallActivity;
+import com.rtcall.entity.User;
 import com.rtcall.net.message.NetMessage;
 
 import java.io.DataInputStream;
@@ -21,11 +23,14 @@ import java.util.Queue;
 public class ServerSocket {
     private static final String TAG = "NET_SOCKET";
 
+    public static final int INFO_DISCONNECTED = 0;
+    public static final int INFO_CONNECTED = 1;
+
     private static final String SERVER_HOST = "trngngntn.duckdns.org";
     private static final int SERVER_PORT = 42069;
 
     private static Socket socket;
-    private static Context appContext;
+    public static Context appContext;
 
     private static Queue<NetMessage> msgQueue;
 
@@ -36,7 +41,7 @@ public class ServerSocket {
     private static DataOutputStream writer;
 
 
-    public static void prepare(Context app){
+    public static void prepare(Context app) {
         appContext = app;
     }
 
@@ -45,26 +50,30 @@ public class ServerSocket {
      *
      * @return true if able to connect to server
      */
-    public static boolean connect() {
+    public static void connect() {
         if (socket == null) {
+            Intent intent = new Intent("SERVICE_INFO");
             try {
                 socket = new Socket(SERVER_HOST, SERVER_PORT);
                 reader = new DataInputStream(socket.getInputStream());
                 writer = new DataOutputStream(socket.getOutputStream());
                 Log.d(TAG, "Socket created");
+                intent.putExtra("info", INFO_CONNECTED);
+                LocalBroadcastManager.getInstance(appContext).sendBroadcast(intent);
             } catch (IOException e) {
                 e.printStackTrace();
-                return false;
+                intent.putExtra("info", INFO_DISCONNECTED);
+                LocalBroadcastManager.getInstance(appContext).sendBroadcast(intent);
+                return;
             }
         }
         msgQueue = new ArrayDeque<>();
         listener = new Thread(() -> {
 
-            while (socket != null && socket.isClosed() == false) {
+            while (socket != null && !socket.isClosed()) {
                 try {
                     if (reader.available() > 0) {
                         NetMessage msg = read();
-
                         Intent intent = new Intent("SERVICE_MESSAGE");
                         intent.putExtra("message", msg);
                         LocalBroadcastManager.getInstance(appContext).sendBroadcast(intent);
@@ -76,7 +85,7 @@ public class ServerSocket {
         });
 
         queueProcesser = new Thread(() -> {
-            while (socket != null && socket.isClosed() == false) {
+            while (socket != null && !socket.isClosed()) {
                 if (!msgQueue.isEmpty()) {
                     try {
                         writer.write(msgQueue.peek().byteArray());
@@ -90,12 +99,9 @@ public class ServerSocket {
 
         listener.start();
         queueProcesser.start();
-
-        return true;
     }
 
     /**
-     *
      * @return
      */
     public static boolean isConnected() {
