@@ -52,14 +52,14 @@ public class RTCallApplication extends Application implements CameraXConfig.Prov
                 NetMessage msg = (NetMessage) intent.getExtras().get("message");
                 switch (msg.getType()) {
                     case NetMessage.Server.MSG_REQUEST_CALL: {
-                        //Intent i = new Intent(getApplicationContext(), IncomingCallActivity.class);
+                        Intent i = new Intent(getApplicationContext(), IncomingCallActivity.class);
                         String callerUid = msg.getData().get("caller").getAsString();
                         User caller = User.getUser(callerUid);
                         intent.putExtra("caller", caller);
                         Log.d("TAG", caller + "is calling");
-                        //intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        //startActivity(intent);
-                        Intent fullscreen = new Intent(getApplicationContext(), IncomingCallActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+                        /*Intent fullscreen = new Intent(getApplicationContext(), IncomingCallActivity.class);
                         PendingIntent pendingFullscreen = PendingIntent
                                 .getActivity(getApplicationContext(), 100, fullscreen,PendingIntent.FLAG_UPDATE_CURRENT);
                         NotificationCompat.Builder notifBuilder = new NotificationCompat.Builder(getApplicationContext(), "NOTIF")
@@ -70,7 +70,7 @@ public class RTCallApplication extends Application implements CameraXConfig.Prov
                                 .setCategory(NotificationCompat.CATEGORY_CALL)
                                 .setFullScreenIntent(pendingFullscreen, true);
                         NotificationManagerCompat notifManager = NotificationManagerCompat.from(getApplicationContext());
-                        notifManager.notify(-1, notifBuilder.build());
+                        notifManager.notify(-1, notifBuilder.build());*/
                     }
                     break;
                     case NetMessage.Server.MSG_NEW_NOTIF: {
