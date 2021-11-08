@@ -128,17 +128,17 @@ public class ContactFragment extends Fragment {
                             e.printStackTrace();
                         }
                         if(jsonArray != null){
-                            app.contacts = new User[jsonArray.size()];
+                            User.contacts = new User[jsonArray.size()];
                             for (int i = 0; i < jsonArray.size(); i++) {
-                                app.contacts[i] = new User(
+                                User.contacts[i] = new User(
                                         jsonArray.get(i).getAsJsonObject().get("uid").getAsString(),
                                         jsonArray.get(i).getAsJsonObject().get("displayName").getAsString()
                                 );
                             }
                         } else {
-                            app.contacts = new User[0];
+                            User.contacts = new User[0];
                         }
-                        ContactAdapter adapter = new ContactAdapter(app.contacts);
+                        ContactAdapter adapter = new ContactAdapter(User.contacts);
                         recViewContact.setAdapter(adapter);
                     }
                     break;

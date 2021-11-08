@@ -77,7 +77,7 @@ public class TestActivity extends AppCompatActivity {
             if (edtUID.getText().toString().equals("")) {
                 Toast.makeText(this.getBaseContext(), "Invalid UID", Toast.LENGTH_SHORT).show();
             } else {
-                ServerSocket.queueMessage(NetMessage.Client.loginMessage(edtUID.getText().toString(), ""));
+                ServerSocket.queueMessage(NetMessage.Client.loginMessage(edtUID.getText().toString(), "abc"));
             }
         });
 

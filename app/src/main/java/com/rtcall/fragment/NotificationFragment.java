@@ -1,6 +1,5 @@
 package com.rtcall.fragment;
 
-import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -10,26 +9,20 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
-import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.rtcall.R;
-import com.rtcall.RTCallApplication;
-import com.rtcall.entity.User;
+import com.rtcall.entity.Notification;
 import com.rtcall.net.ServerSocket;
 import com.rtcall.net.message.NetMessage;
 
 public class NotificationFragment extends Fragment {
-    private RTCallApplication app;
 
     private View rootView;
     private RecyclerView recViewContact;
@@ -43,13 +36,12 @@ public class NotificationFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        rootView = inflater.inflate(R.layout.fragment_contact, container, false);
+        rootView = inflater.inflate(R.layout.fragment_notification, container, false);
         // Inflate the layout for this fragment
         recViewContact = rootView.findViewById(R.id.frag_preferences);
         layoutManager = new LinearLayoutManager(getActivity());
         setLayoutManager(layoutManager);
-        app = (RTCallApplication) requireActivity().getApplication();
-        ServerSocket.queueMessage(NetMessage.Client.reqContactMessage());
+        ServerSocket.queueMessage(NetMessage.Client.reqNotifMessage());
         initLocalBroadcastReceiver();
         return rootView;
     }
@@ -61,25 +53,29 @@ public class NotificationFragment extends Fragment {
                 Log.v("LOG", "Received intent");
                 NetMessage msg = (NetMessage) intent.getExtras().get("message");
                 switch (msg.getType()) {
-                    case NetMessage.Server.MSG_CONTACT_LIST: {
+                    case NetMessage.Server.MSG_ALL_NOTIF: {
                         JsonArray jsonArray = null;
                         try {
-                            jsonArray = msg.getData().getAsJsonArray("contactList");
+                            jsonArray = msg.getData().getAsJsonArray("notifList");
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-                        if (jsonArray != null) {
-                            app.contacts = new User[jsonArray.size()];
+                        Notification[] notifList;
+                        if(jsonArray != null){
+                            notifList = new Notification[jsonArray.size()];
                             for (int i = 0; i < jsonArray.size(); i++) {
-                                app.contacts[i] = new User(
-                                        jsonArray.get(i).getAsJsonObject().get("uid").getAsString(),
-                                        jsonArray.get(i).getAsJsonObject().get("displayName").getAsString()
+                                JsonObject jObj = jsonArray.get(i).getAsJsonObject();
+                                notifList[i] = new Notification(
+                                        jObj.get("id").getAsInt(),
+                                        jObj.get("displayName").getAsString(),
+                                        jObj.getAsJsonObject("data"),
+                                        jObj.getAsJsonObject("status").getAsInt()
                                 );
                             }
                         } else {
-                            app.contacts = new User[0];
+                            notifList = new Notification[0];
                         }
-                        ContactAdapter adapter = new ContactAdapter(app.contacts);
+                        NotificationAdapter adapter = new NotificationAdapter(notifList);
                         recViewContact.setAdapter(adapter);
                     }
                     break;

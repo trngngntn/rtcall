@@ -2,9 +2,10 @@ package com.rtcall.entity;
 
 import com.google.gson.JsonObject;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 
-public class Notification {
+public class Notification implements Serializable {
 
     public static final int TYPE_MISSED_CALL = 0;
     public static final int TYPE_PENDING_CONTACT = 1;
@@ -14,14 +15,12 @@ public class Notification {
     public static final int STATUS_READ = 1;
 
     private int id;
-    private String uid;
-    private Timestamp timestamp;
+    private String timestamp;
     private JsonObject data;
     private int status;
 
-    public Notification(int id, String uid, Timestamp timestamp, JsonObject data, int status) {
+    public Notification(int id, String timestamp, JsonObject data, int status) {
         this.id = id;
-        this.uid = uid;
         this.timestamp = timestamp;
         this.data = data;
         this.status = status;
@@ -31,11 +30,7 @@ public class Notification {
         return id;
     }
 
-    public String getUid() {
-        return uid;
-    }
-
-    public Timestamp getTimestamp() {
+    public String getTimestamp() {
         return timestamp;
     }
 

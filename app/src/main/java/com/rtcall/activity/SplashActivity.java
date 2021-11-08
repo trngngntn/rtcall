@@ -17,6 +17,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.rtcall.R;
+import com.rtcall.RTCallApplication;
 import com.rtcall.net.ServerSocket;
 import com.rtcall.net.message.NetMessage;
 import com.rtcall.service.RTCallService;
@@ -30,7 +31,8 @@ public class SplashActivity extends AppCompatActivity {
             Manifest.permission.RECORD_AUDIO,
             Manifest.permission.VIBRATE,
             Manifest.permission.WAKE_LOCK,
-            Manifest.permission.SYSTEM_ALERT_WINDOW
+            Manifest.permission.SYSTEM_ALERT_WINDOW,
+            Manifest.permission.USE_FULL_SCREEN_INTENT
     };
 
     Application app;
@@ -40,6 +42,10 @@ public class SplashActivity extends AppCompatActivity {
         app = getApplication();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
+
+        RTCallApplication.application = (RTCallApplication) getApplication();
+        RTCallApplication.application.createNotificationChannel();
+        RTCallApplication.application.initLocalBroadcastReceiver();
 
         if(!checkPermission()){
             ActivityCompat.requestPermissions(this, permissions, 12);

@@ -23,6 +23,8 @@ public class NetMessage implements Serializable {
         public final static int MSG_ADD_CONTACT = 0x05;
         public final static int MSG_APPROVE_CONTACT = 0x06;
         public final static int MSG_REJECT_CONTACT = 0x07;
+        public final static int MSG_REQ_NOTIF = 0x08;
+        public final static int MSG_SEEN_NOTIF = 0x09;
 
         public static NetMessage loginMessage(String username, String password) {
             JsonObject data = new JsonObject();
@@ -54,6 +56,16 @@ public class NetMessage implements Serializable {
             JsonObject data = new JsonObject();
             data.addProperty("uid", username);
             return new NetMessage(MSG_ADD_CONTACT, data);
+        }
+
+        public static NetMessage reqNotifMessage(){
+            JsonObject data = new JsonObject();
+            return new NetMessage(MSG_REQ_NOTIF, data);
+        }
+
+        public static NetMessage seenNotification(){
+            JsonObject data = new JsonObject();
+            return new NetMessage(MSG_SEEN_NOTIF, data);
         }
     }
 
