@@ -1,5 +1,7 @@
 package com.rtcall.entity;
 
+import android.util.Log;
+
 import java.io.Serializable;
 
 public class User implements Serializable {
@@ -32,6 +34,7 @@ public class User implements Serializable {
 
     public static User getUser(String username){
         for(User u: contacts){
+            Log.e("USER", u.getUid() + " :::::::::::::::::::: " + username);
             if (u.getUid().equals(username)){
                 return u;
             }

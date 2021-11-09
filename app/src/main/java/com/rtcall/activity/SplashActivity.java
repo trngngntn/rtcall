@@ -1,5 +1,6 @@
 package com.rtcall.activity;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -12,6 +13,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -35,11 +37,11 @@ public class SplashActivity extends AppCompatActivity {
             Manifest.permission.USE_FULL_SCREEN_INTENT
     };
 
-    Application app;
+    boolean connected = false;
+    boolean perm = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        app = getApplication();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
@@ -47,11 +49,16 @@ public class SplashActivity extends AppCompatActivity {
         RTCallApplication.application.createNotificationChannel();
         RTCallApplication.application.initLocalBroadcastReceiver();
 
-        if(!checkPermission()){
+        if (!checkPermission()) {
             ActivityCompat.requestPermissions(this, permissions, 12);
+        } else {
+            perm = true;
+
         }
 
-        if(ServerSocket.isConnected()){
+        Log.d("SPLASH", "SS: " + ServerSocket.isConnected() + perm);
+
+        if (ServerSocket.isConnected() && perm) {
             prep();
         } else {
             Intent service = new Intent(this, RTCallService.class);
@@ -60,26 +67,41 @@ public class SplashActivity extends AppCompatActivity {
         }
     }
 
-    private boolean checkPermission(){
-        for(String perm:permissions){
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        perm = true;
+        if (connected || ServerSocket.isConnected()) {
+            prep();
+        } else {
+            Intent service = new Intent(this, RTCallService.class);
+            startService(service);
+            initLocalBroadcastReceiver();
+        }
+    }
+
+    private boolean checkPermission() {
+        for (String perm : permissions) {
             int result = ContextCompat.checkSelfPermission(this, perm);
-            if(result != PackageManager.PERMISSION_GRANTED){
+            if (result != PackageManager.PERMISSION_GRANTED) {
                 return false;
             }
         }
         return true;
     }
 
-    private void prep(){
-        if(true){ // not login yet
-            Intent loginIntent = new Intent(app, LoginActivity.class);
+    private void prep() {
+        SharedPreferences prefs = getSharedPreferences("localData", MODE_PRIVATE);
+        if (!prefs.contains("loggedUid")) { // not login yet
+            Intent loginIntent = new Intent(RTCallApplication.application, LoginActivity.class);
             finish();
             startActivity(loginIntent);
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         } else {
-            Intent homeIntent = new Intent(app, MainActivity.class);
+            Intent homeIntent = new Intent(RTCallApplication.application, MainActivity.class);
             finish();
             startActivity(homeIntent);
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         }
     }
 
@@ -90,8 +112,11 @@ public class SplashActivity extends AppCompatActivity {
             @Override
             public void onReceive(Context context, Intent intent) {
                 int infoCode = (int) intent.getExtras().get("info");
-                if(infoCode == ServerSocket.INFO_CONNECTED){
-                    prep();
+                if (infoCode == ServerSocket.INFO_CONNECTED) {
+                    connected = true;
+                    if (perm) {
+                        prep();
+                    }
                 } else {
 
                 }

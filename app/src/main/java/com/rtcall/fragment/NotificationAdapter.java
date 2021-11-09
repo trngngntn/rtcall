@@ -1,22 +1,34 @@
 package com.rtcall.fragment;
 
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.StyleSpan;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.fragment.app.Fragment;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.rtcall.R;
 import com.rtcall.RTCallApplication;
+import com.rtcall.activity.MainActivity;
+import com.rtcall.activity.OutgoingCallActivity;
 import com.rtcall.entity.Notification;
 import com.rtcall.entity.User;
+import com.rtcall.net.ServerSocket;
+import com.rtcall.net.message.NetMessage;
+
+import java.util.List;
 
 public class NotificationAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
 
@@ -25,6 +37,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     }
 
     public static class MissedCallNotifViewHolder extends RecyclerView.ViewHolder implements NotificationItem{
+        protected static View lastItem;
         private Notification notification;
 
         private Button btCall;
@@ -35,24 +48,42 @@ public class NotificationAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             btCall = itemView.findViewById(R.id.bt_call_now);
             txtInfo = itemView.findViewById(R.id.txt_notif_info);
 
-            btCall.setOnClickListener(view -> {
+            itemView.setOnClickListener(view -> {
+                if(lastItem != null) {
+                    ViewGroup.LayoutParams lastLp = lastItem.getLayoutParams();
+                    lastLp.height = (int) RTCallApplication.application
+                            .getApplicationContext().getResources().getDimension(R.dimen.default_row_item);
+                    lastItem.setLayoutParams(lastLp);
+                }
+                ViewGroup.LayoutParams lp = itemView.getLayoutParams();
+                lp.height = (int) RTCallApplication.application.getApplicationContext().getResources().getDimension(R.dimen.expaned_row_item);
+                itemView.setLayoutParams(lp);
+                lastItem = itemView;
+            });
 
+            btCall.setOnClickListener(view -> {
+                Intent i = new Intent(RTCallApplication.application, OutgoingCallActivity.class);
+                User user = User.getUser(notification.getData().get("fromUid").getAsString());
+                i.putExtra("callee", user);
+                i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                RTCallApplication.application.startActivity(i);
             });
         }
 
         @Override
         public void setNotification(Notification notification) {
             this.notification = notification;
-            String user = notification.getData().get("uid").getAsString();
-            String notifInfo = "Missed call from " + User.getUser(user).getDisplayName();
-            SpannableStringBuilder stringBuilder = new SpannableStringBuilder();
+            String user = notification.getData().get("fromUid").getAsString();
+            String notifInfo = "Missed call from " + notification.getData().get("userDisplay").getAsString();
+            SpannableStringBuilder stringBuilder = new SpannableStringBuilder(notifInfo);
             StyleSpan boldSpan = new StyleSpan(Typeface.BOLD);
-            stringBuilder.setSpan(boldSpan, 17, notifInfo.length() - 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            stringBuilder.setSpan(boldSpan, 17, notifInfo.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             txtInfo.setText(stringBuilder);
         }
     }
 
     public static class PendingContactNotifViewHolder extends RecyclerView.ViewHolder implements NotificationItem{
+        protected static View lastItem;
         private Notification notification;
 
         private Button btApprove;
@@ -65,30 +96,54 @@ public class NotificationAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             btReject = itemView.findViewById(R.id.bt_decline_contact);
             txtInfo = itemView.findViewById(R.id.txt_notif_info);
 
-            btApprove.setOnClickListener(view -> {
+            itemView.setOnClickListener(view -> {
+                if(lastItem != null) {
+                    ViewGroup.LayoutParams lastLp = lastItem.getLayoutParams();
+                    lastLp.height = (int) RTCallApplication.application
+                            .getApplicationContext().getResources().getDimension(R.dimen.default_row_item);
+                    lastItem.setLayoutParams(lastLp);
+                }
+                ViewGroup.LayoutParams lp = itemView.getLayoutParams();
+                lp.height = (int) RTCallApplication.application.getApplicationContext().getResources().getDimension(R.dimen.expaned_row_item);
+                itemView.setLayoutParams(lp);
+                lastItem = itemView;
+            });
 
+            btApprove.setOnClickListener(view -> {
+                String uid = notification.getData().get("fromUid").getAsString();
+                ServerSocket.queueMessage(NetMessage.Client.approveContactMessage(uid, notification.getId()));
+                NotificationAdapter adapter = (NotificationAdapter) getBindingAdapter();
+                adapter.localDataSet.remove(notification);
+                adapter.notifyItemRemoved(getAbsoluteAdapterPosition());
+                Intent intent = new Intent("SWITCH_FRAGMENT");
+                intent.putExtra("frag", MainActivity.CONTACT_FRAG);
+                LocalBroadcastManager.getInstance(RTCallApplication.application).sendBroadcast(intent);
             });
 
             btReject.setOnClickListener(view -> {
-
+                String uid = notification.getData().get("fromUid").getAsString();
+                ServerSocket.queueMessage(NetMessage.Client.rejectContactMessage(uid, notification.getId()));
+                NotificationAdapter adapter = (NotificationAdapter) getBindingAdapter();
+                adapter.localDataSet.remove(notification);
+                adapter.notifyItemRemoved(getAbsoluteAdapterPosition());
             });
         }
 
         @Override
         public void setNotification(Notification notification) {
             this.notification = notification;
-            String user = notification.getData().get("uid").getAsString();
-            String notifInfo = "Pending contact from " + User.getUser(user).getDisplayName();
-            SpannableStringBuilder stringBuilder = new SpannableStringBuilder();
+            String name = notification.getData().get("userDisplay").getAsString();
+            String notifInfo = "Pending contact from " + name;
+            SpannableStringBuilder stringBuilder = new SpannableStringBuilder(notifInfo);
             StyleSpan boldSpan = new StyleSpan(Typeface.BOLD);
-            stringBuilder.setSpan(boldSpan, 17, notifInfo.length() - 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            stringBuilder.setSpan(boldSpan, 20, notifInfo.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             txtInfo.setText(stringBuilder);
         }
     }
 
-    private Notification[] localDataSet;
+    protected List<Notification> localDataSet;
 
-    public NotificationAdapter(Notification[] notifList) {
+    public NotificationAdapter(List<Notification> notifList) {
         this.localDataSet = notifList;
     }
 
@@ -107,22 +162,22 @@ public class NotificationAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             }
             default:
         }
+        Log.e("NOTIF", "VIEWTYPE: " + viewType);
         return null;
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        ((NotificationItem)holder).setNotification(localDataSet[position]);
+        ((NotificationItem)holder).setNotification(localDataSet.get(position));
     }
 
     @Override
     public int getItemViewType(int position) {
-        return localDataSet[position].getData().get("type").getAsInt();
+        return localDataSet.get(position).getData().get("type").getAsInt();
     }
 
     @Override
     public int getItemCount() {
-        return localDataSet.length + 1;
+        return localDataSet.size();
     }
-
 }

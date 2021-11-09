@@ -11,11 +11,12 @@ import java.nio.charset.StandardCharsets;
 
 public class NetMessage implements Serializable {
     private static final String TAG = "NET_MESSAGE";
-    private static final Gson gson = new Gson();
+    private transient static final Gson gson = new Gson();
 
     public static class Client {
         private static final String TAG = "NET_CLIENT_MESSAGE";
 
+        public final static int MSG_CONNECT = 0x00;
         public final static int MSG_LOGIN = 0x01;
         public final static int MSG_REGISTER = 0x02;
         public final static int MSG_DIAL = 0x03;
@@ -26,6 +27,12 @@ public class NetMessage implements Serializable {
         public final static int MSG_REQ_NOTIF = 0x08;
         public final static int MSG_SEEN_NOTIF = 0x09;
 
+        public static NetMessage connectMessage(String uid) {
+            JsonObject data = new JsonObject();
+            data.addProperty("uid", uid);
+            return new NetMessage(MSG_CONNECT, data);
+        }
+
         public static NetMessage loginMessage(String username, String password) {
             JsonObject data = new JsonObject();
             data.addProperty("username", username);
@@ -33,7 +40,7 @@ public class NetMessage implements Serializable {
             return new NetMessage(MSG_LOGIN, data);
         }
 
-        public static NetMessage registerMessage(String display, String username, String password){
+        public static NetMessage registerMessage(String display, String username, String password) {
             JsonObject data = new JsonObject();
             data.addProperty("displayName", display);
             data.addProperty("username", username);
@@ -58,12 +65,26 @@ public class NetMessage implements Serializable {
             return new NetMessage(MSG_ADD_CONTACT, data);
         }
 
-        public static NetMessage reqNotifMessage(){
+        public static NetMessage approveContactMessage(String uid, int notifId) {
+            JsonObject data = new JsonObject();
+            data.addProperty("uid", uid);
+            data.addProperty("notifId", notifId);
+            return new NetMessage(MSG_APPROVE_CONTACT, data);
+        }
+
+        public static NetMessage rejectContactMessage(String uid, int notifId) {
+            JsonObject data = new JsonObject();
+            data.addProperty("uid", uid);
+            data.addProperty("notifId", notifId);
+            return new NetMessage(MSG_REJECT_CONTACT, data);
+        }
+
+        public static NetMessage reqNotifMessage() {
             JsonObject data = new JsonObject();
             return new NetMessage(MSG_REQ_NOTIF, data);
         }
 
-        public static NetMessage seenNotification(){
+        public static NetMessage seenNotification() {
             JsonObject data = new JsonObject();
             return new NetMessage(MSG_SEEN_NOTIF, data);
         }
@@ -88,6 +109,8 @@ public class NetMessage implements Serializable {
         public final static int MSG_NEW_NOTIF = 0x10;
 
         public final static int MSG_REQUEST_CALL = 0x11;
+        public final static int MSG_CALLEE_BUSY = 0x12;
+        public final static int MSG_CALLEE_OFF = 0x13;
     }
 
     public static class Relay {
@@ -95,7 +118,8 @@ public class NetMessage implements Serializable {
 
         public static final int MSG_CALL_ACCEPTED = 0x20;
         public static final int MSG_CALL_DECLINED = 0x21;
-        public static final int MSG_CALL_ENDED = 0x22;
+        public static final int MSG_CALL_PRE_ENDED = 0x22;
+        public static final int MSG_CALL_ENDED = 0x23;
 
         public static final int MSG_WEBRTC_CANDIDATE = 0x30;
         public static final int MSG_WEBRTC_OFFER = 0x31;
@@ -111,6 +135,12 @@ public class NetMessage implements Serializable {
             JsonObject data = new JsonObject();
             data.addProperty("timestamp", "");
             return new NetMessage(MSG_CALL_DECLINED, data);
+        }
+
+        public static NetMessage preEndCallMessage() {
+            JsonObject data = new JsonObject();
+            data.addProperty("timestamp", "");
+            return new NetMessage(MSG_CALL_PRE_ENDED, data);
         }
 
         public static NetMessage endCallMessage() {
@@ -177,7 +207,11 @@ public class NetMessage implements Serializable {
         //Log.v(TAG, "type: " + result.type);
         String stringData = new String(byteData, 4, byteData.length - 4);
         //Log.v(TAG, stringData);
-        result.data = gson.fromJson(stringData, JsonObject.class);
+        try{
+        result.data = gson.fromJson(stringData, JsonObject.class);}
+        catch (Exception e){
+            Log.e("JSON", stringData);
+        }
         return result;
     }
 }

@@ -40,6 +40,8 @@ public class ServerSocket {
     private static DataInputStream reader;
     private static DataOutputStream writer;
 
+    public static boolean failed = false;
+
 
     public static void prepare(Context app) {
         appContext = app;
@@ -51,61 +53,72 @@ public class ServerSocket {
      * @return true if able to connect to server
      */
     public static void connect() {
+        failed = false;
+        Intent intentInfo = new Intent("SERVICE_INFO");
+        if (msgQueue == null) {
+            msgQueue = new ArrayDeque<>();
+        }
         if (socket == null) {
-            Intent intent = new Intent("SERVICE_INFO");
+
             try {
                 socket = new Socket(SERVER_HOST, SERVER_PORT);
                 reader = new DataInputStream(socket.getInputStream());
                 writer = new DataOutputStream(socket.getOutputStream());
                 Log.d(TAG, "Socket created");
-                intent.putExtra("info", INFO_CONNECTED);
-                LocalBroadcastManager.getInstance(appContext).sendBroadcast(intent);
             } catch (IOException e) {
-                e.printStackTrace();
-                intent.putExtra("info", INFO_DISCONNECTED);
-                LocalBroadcastManager.getInstance(appContext).sendBroadcast(intent);
+                //e.printStackTrace();
+                intentInfo.putExtra("info", INFO_DISCONNECTED);
+                LocalBroadcastManager.getInstance(appContext).sendBroadcast(intentInfo);
+                failed = true;
                 return;
             }
         }
-        msgQueue = new ArrayDeque<>();
-        listener = new Thread(() -> {
+        if (listener == null) {
+            listener = new Thread(() -> {
 
-            while (socket != null && !socket.isClosed()) {
-                try {
-                    if (reader.available() > 0) {
-                        NetMessage msg = read();
-                        Intent intent = new Intent("SERVICE_MESSAGE");
-                        intent.putExtra("message", msg);
-                        LocalBroadcastManager.getInstance(appContext).sendBroadcast(intent);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
-        queueProcesser = new Thread(() -> {
-            while (socket != null && !socket.isClosed()) {
-                if (!msgQueue.isEmpty()) {
+                while (socket != null && !socket.isClosed()) {
                     try {
-                        writer.write(msgQueue.peek().byteArray());
-                        msgQueue.poll();
+                        if (reader.available() > 0) {
+                            NetMessage msg = read();
+                            Intent intent = new Intent("SERVICE_MESSAGE");
+                            intent.putExtra("message", msg);
+                            LocalBroadcastManager.getInstance(appContext).sendBroadcast(intent);
+                        }
                     } catch (IOException e) {
                         e.printStackTrace();
+                        return;
                     }
                 }
-            }
-        });
+            });
+            listener.start();
+        }
+        if (queueProcesser == null) {
+            queueProcesser = new Thread(() -> {
+                while (socket != null && !socket.isClosed()) {
+                    if (!msgQueue.isEmpty()) {
+                        try {
+                            writer.write(msgQueue.peek().byteArray());
+                            msgQueue.poll();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            return;
+                        }
+                    }
+                }
+            });
+            queueProcesser.start();
+        }
 
-        listener.start();
-        queueProcesser.start();
+
+        intentInfo.putExtra("info", INFO_CONNECTED);
+        LocalBroadcastManager.getInstance(appContext).sendBroadcast(intentInfo);
     }
 
     /**
      * @return
      */
     public static boolean isConnected() {
-        return socket != null && reader != null && writer != null;
+        return socket != null && reader != null && writer != null && queueProcesser != null;
     }
 
     /**
@@ -114,6 +127,9 @@ public class ServerSocket {
      * @param msg
      */
     public static void queueMessage(NetMessage msg) {
+        if (msgQueue == null) {
+            msgQueue = new ArrayDeque<>();
+        }
         msgQueue.add(msg);
         //Log.v(TAG, "Queued new message");
     }
@@ -134,12 +150,15 @@ public class ServerSocket {
     }
 
     public static void close() {
+
         try {
             socket.getInputStream().close();
             socket.getOutputStream().close();
             socket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+            listener.join();
+            queueProcesser.join();
+        } catch (Exception e) {
+            //e.printStackTrace();
         } finally {
             socket = null;
         }

@@ -76,7 +76,7 @@ public class ContactFragment extends Fragment {
                         break;
                         case NetMessage.Server.MSG_CONTACT_PENDING: {
                             dismiss();
-                            Toast.makeText(getOwnerActivity(), "Contact request sent.", Toast.LENGTH_SHORT);
+                            Toast.makeText(RTCallApplication.application, "Contact request sent.", Toast.LENGTH_SHORT).show();
                         }
                         break;
                     }
@@ -131,7 +131,7 @@ public class ContactFragment extends Fragment {
                             User.contacts = new User[jsonArray.size()];
                             for (int i = 0; i < jsonArray.size(); i++) {
                                 User.contacts[i] = new User(
-                                        jsonArray.get(i).getAsJsonObject().get("uid").getAsString(),
+                                        jsonArray.get(i).getAsJsonObject().get("username").getAsString(),
                                         jsonArray.get(i).getAsJsonObject().get("displayName").getAsString()
                                 );
                             }

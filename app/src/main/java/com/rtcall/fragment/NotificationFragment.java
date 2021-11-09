@@ -22,6 +22,9 @@ import com.rtcall.entity.Notification;
 import com.rtcall.net.ServerSocket;
 import com.rtcall.net.message.NetMessage;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class NotificationFragment extends Fragment {
 
     private View rootView;
@@ -58,22 +61,19 @@ public class NotificationFragment extends Fragment {
                         try {
                             jsonArray = msg.getData().getAsJsonArray("notifList");
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            //e.printStackTrace();
                         }
-                        Notification[] notifList;
+                        List<Notification> notifList = new ArrayList<>();
                         if(jsonArray != null){
-                            notifList = new Notification[jsonArray.size()];
                             for (int i = 0; i < jsonArray.size(); i++) {
                                 JsonObject jObj = jsonArray.get(i).getAsJsonObject();
-                                notifList[i] = new Notification(
+                                notifList.add(new Notification(
                                         jObj.get("id").getAsInt(),
-                                        jObj.get("displayName").getAsString(),
+                                        jObj.get("timestamp").getAsString(),
                                         jObj.getAsJsonObject("data"),
-                                        jObj.getAsJsonObject("status").getAsInt()
-                                );
+                                        jObj.get("status").getAsInt()
+                                ));
                             }
-                        } else {
-                            notifList = new Notification[0];
                         }
                         NotificationAdapter adapter = new NotificationAdapter(notifList);
                         recViewContact.setAdapter(adapter);

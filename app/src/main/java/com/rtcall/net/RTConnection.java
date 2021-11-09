@@ -8,6 +8,7 @@ import android.util.Log;
 
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.rtcall.RTCallApplication;
 import com.rtcall.net.message.NetMessage;
 
 import org.json.JSONException;
@@ -37,12 +38,11 @@ public class RTConnection {
 
     private static ExecutorService wait;
 
-    public static void setAppContext(Context context) {
-        //appContext = context;
-        initLocalReceiver();
-    }
+    private static boolean localReceiverInit = false;
 
-    private static void initLocalReceiver() {
+    public static void initLocalReceiver() {
+        if (localReceiverInit) return;
+        wait = Executors.newSingleThreadExecutor();
         BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -53,7 +53,14 @@ public class RTConnection {
                                 msg.getData().get("sdpMid").getAsString(),
                                 msg.getData().get("sdpMLineIndex").getAsInt(),
                                 msg.getData().get("sdp").getAsString());
-                        peerConn.addIceCandidate(candidate);
+                        Runnable task = new Runnable() {
+                            @Override
+                            public void run() {
+                                while (!connectionReady) ;
+                                peerConn.addIceCandidate(candidate);
+                            }
+                        };
+                        wait.execute(task);
                     }
                     break;
                     case NetMessage.Relay.MSG_WEBRTC_OFFER: {
@@ -62,13 +69,11 @@ public class RTConnection {
                         SessionDescription sessionDescription = new SessionDescription(
                                 SessionDescription.Type.OFFER,
                                 msg.getData().get("description").getAsString());
-
-                        peerConn.setRemoteDescription(new mObserver(), sessionDescription);
-                        wait = Executors.newSingleThreadExecutor();
                         Runnable task = new Runnable() {
                             @Override
                             public void run() {
-                                while (connectionReady != true) ;
+                                while (!connectionReady) ;
+                                peerConn.setRemoteDescription(new mObserver(), sessionDescription);
                                 answer();
                             }
                         };
@@ -92,12 +97,13 @@ public class RTConnection {
         IntentFilter filter = new IntentFilter();
         filter.addAction("SERVICE_MESSAGE");
         LocalBroadcastManager.getInstance(ServerSocket.appContext).registerReceiver(broadcastReceiver, filter);
+        localReceiverInit = true;
     }
 
     public static PeerConnectionFactory initPeerConnFactory() {
         //create peerConn factory
         PeerConnectionFactory.InitializationOptions initOptions =
-                PeerConnectionFactory.InitializationOptions.builder(ServerSocket.appContext)
+                PeerConnectionFactory.InitializationOptions.builder(RTCallApplication.application.getApplicationContext())
                         .setEnableInternalTracer(true)
                         .setFieldTrials("WebRTC-H264HighProfile/Enabled/")
                         .createInitializationOptions();

@@ -38,7 +38,7 @@ public class RTStream {
         }
     }
 
-    private static class LoggingVideoSink implements VideoSink {
+    /*private static class LoggingVideoSink implements VideoSink {
         private VideoSink target;
 
         @Override
@@ -53,7 +53,7 @@ public class RTStream {
         synchronized public void setTarget(VideoSink target) {
             this.target = target;
         }
-    }
+    }*/
 
     public static Context appContext;
 
@@ -130,7 +130,7 @@ public class RTStream {
         if (remoteMediaStream.videoTracks.size() > 0) {
             remoteVideoTrack = remoteMediaStream.videoTracks.get(0);
             remoteVideoTrack.setEnabled(true);
-            LoggingVideoSink remoteSink = new LoggingVideoSink();
+            MyVideoSink remoteSink = new MyVideoSink();
             remoteSink.setTarget(srfRemoteStream);
             remoteVideoTrack.addSink(remoteSink);
         } else {

@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Vibrator;
 import android.util.Log;
 import android.widget.Button;
@@ -20,7 +21,7 @@ import com.rtcall.net.ServerSocket;
 import com.rtcall.net.message.NetMessage;
 
 public class IncomingCallActivity extends AppCompatActivity {
-
+    final Handler handler = new Handler();
     User caller;
     Vibrator vibrator;
 
@@ -33,7 +34,7 @@ public class IncomingCallActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_incoming_call);
 
-        RTConnection.setAppContext(getApplicationContext());
+        RTConnection.initLocalReceiver();
 
         caller = (User) getIntent().getExtras().get("caller");
 
@@ -69,6 +70,7 @@ public class IncomingCallActivity extends AppCompatActivity {
                 Log.v("LOG", "Received intent");
                 NetMessage msg = (NetMessage) intent.getExtras().get("message");
                 switch (msg.getType()) {
+                    case NetMessage.Relay.MSG_CALL_PRE_ENDED:
                     case NetMessage.Relay.MSG_CALL_ENDED: {
                         finish();
                     }

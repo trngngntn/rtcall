@@ -14,4 +14,9 @@
         android:id="@+id/nav_settings"
         android:name="com.rtcall.fragment.SettingsFragment"
         android:label="SettingsFragment" />
+    <fragment
+        android:id="@+id/nav_notifications"
+        android:name="com.rtcall.fragment.NotificationFragment"
+        android:label="fragment_notification"
+        tools:layout="@layout/fragment_notification" />
 </navigation>

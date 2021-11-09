@@ -11,35 +11,46 @@
     android:clickable="true"
     android:elevation="4dp">
 
-    <TextView
-        android:id="@+id/txt_notif_info"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="48dp"
-        android:layout_marginTop="22dp"
-        android:text="Friend request from [User]"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <Button
         android:id="@+id/bt_accept_contact"
         android:layout_width="wrap_content"
         android:layout_height="40dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="12dp"
         android:background="@drawable/bt_push"
-        android:text="Accept"
+        android:text="Approve"
         app:backgroundTint="@null"
-        app:layout_constraintStart_toStartOf="@+id/txt_notif_info"
-        app:layout_constraintTop_toBottomOf="@+id/txt_notif_info" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/constraintLayout4" />
 
     <Button
         android:id="@+id/bt_decline_contact"
         android:layout_width="wrap_content"
         android:layout_height="40dp"
-        android:layout_marginEnd="48dp"
+        android:layout_marginEnd="32dp"
         android:background="@drawable/bt_push"
-        android:text="Decline"
+        android:text="Reject"
         app:backgroundTint="@null"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/bt_accept_contact" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout4"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/txt_notif_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="48dp"
+            android:text="Friend request from [User]"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.511" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

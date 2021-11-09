@@ -3,15 +3,19 @@ package com.rtcall.activity;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 
 import com.rtcall.R;
 import com.rtcall.entity.User;
 import com.rtcall.net.RTStream;
 import com.rtcall.net.RTConnection;
+import com.rtcall.net.ServerSocket;
+import com.rtcall.net.message.NetMessage;
 
 import org.webrtc.EglBase;
 
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class CallActivity extends AppCompatActivity {
@@ -27,30 +31,46 @@ public class CallActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_call);
+        Bundle bundle = getIntent().getExtras();
+        if(bundle != null && bundle.get("incoming")!=null)
+        {
+            Log.e("FUCKME", "QUEUEUEUEUEUUEUEUEUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU");
+            ServerSocket.queueMessage(NetMessage.Relay.acceptCallMessage());
+        }
 
         RTStream.srfLocalStream= findViewById(R.id.srf_local_stream);
         RTStream.srfRemoteStream = findViewById(R.id.srf_remote_stream);
         btEndCall = findViewById(R.id.bt_end_call);
 
+        btEndCall.setOnClickListener(view -> {
+
+        });
+
         Object temp = getIntent().getExtras().get("caller");
         otherPeer = (User) (temp == null ?  getIntent().getExtras().get("callee") : temp);
         offerFirst = temp != null;
 
-        //webrtc related
         eglBase = EglBase.create();
         RTConnection.eglBaseContext = eglBase.getEglBaseContext();
-        RTConnection.initPeerConnFactory();
-
-
         RTStream.appContext = getApplicationContext();
         RTStream.eglBaseContext = eglBase.getEglBaseContext();
         RTStream.initSurface();
 
-        RTStream.prepareLocalMedia();
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
 
-        RTConnection.createPeerConnection();
+                RTConnection.initPeerConnFactory();
 
-        RTStream.startLocalStream();
+                RTStream.prepareLocalMedia();
+
+                RTConnection.createPeerConnection();
+
+                RTStream.startLocalStream();
+            }
+        };
+        executorService.execute(runnable);
 
         if(offerFirst){
             Runnable task = new Runnable() {
@@ -60,7 +80,7 @@ public class CallActivity extends AppCompatActivity {
                     RTConnection.offer();
                 }
             };
-            Executors.newSingleThreadExecutor().execute(task);
+            executorService.execute(task);
         }
 
     }

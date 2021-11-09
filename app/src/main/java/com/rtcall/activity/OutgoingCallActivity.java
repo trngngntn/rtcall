@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
@@ -15,13 +16,16 @@ import android.widget.TextView;
 import com.rtcall.R;
 import com.rtcall.entity.User;
 import com.rtcall.net.RTConnection;
+import com.rtcall.net.ServerSocket;
 import com.rtcall.net.message.NetMessage;
 
 public class OutgoingCallActivity extends AppCompatActivity {
-
+    private static final int DELAY = 1500;
+    final Handler handler = new Handler();
     User callee;
 
     TextView txtCalleeName;
+    TextView txtCallStatus;
     Button btEndCall;
 
     @Override
@@ -29,14 +33,30 @@ public class OutgoingCallActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_outcoming_call);
 
-        RTConnection.setAppContext(getApplicationContext());
+        RTConnection.initLocalReceiver();
 
         callee = (User) getIntent().getExtras().get("callee");
+        ServerSocket.queueMessage(NetMessage.Client.dialMessage(callee.getUid()));
 
         txtCalleeName = findViewById(R.id.txt_callee_name);
+        txtCallStatus = findViewById(R.id.txt_call_status);
         btEndCall = findViewById(R.id.bt_end_call);
 
         txtCalleeName.setText(callee.getDisplayName());
+
+        btEndCall.setOnClickListener(view -> {
+            ServerSocket.queueMessage(NetMessage.Relay.preEndCallMessage());
+            txtCallStatus.setText("End call");
+            handler.postDelayed(this::finish, DELAY);
+        });
+
+        initLocalBroadcastReceiver();
+
+        handler.postDelayed(() -> {
+            ServerSocket.queueMessage(NetMessage.Relay.preEndCallMessage());
+            txtCallStatus.setText("No answer");
+            handler.postDelayed(this::finish, DELAY);
+        }, 30000);
 
         initLocalBroadcastReceiver();
     }
@@ -56,11 +76,31 @@ public class OutgoingCallActivity extends AppCompatActivity {
                     }
                     break;
                     case NetMessage.Relay.MSG_CALL_DECLINED: {
-                        finish();
+                        txtCallStatus.setText("Call declined");
+                        handler.postDelayed(() -> {
+                            finish();
+                        }, DELAY);
                     }
                     break;
                     case NetMessage.Relay.MSG_CALL_ENDED: {
-                        finish();
+                        txtCallStatus.setText("Call ended");
+                        handler.postDelayed(() -> {
+                            finish();
+                        }, DELAY);
+                    }
+                    break;
+                    case NetMessage.Server.MSG_CALLEE_BUSY: {
+                        txtCallStatus.setText("User is busy");
+                        handler.postDelayed(() -> {
+                            finish();
+                        }, DELAY);
+                    }
+                    break;
+                    case NetMessage.Server.MSG_CALLEE_OFF: {
+                        txtCallStatus.setText("User is offline");
+                        handler.postDelayed(() -> {
+                            finish();
+                        }, DELAY);
                     }
                     break;
                 }

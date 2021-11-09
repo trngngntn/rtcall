@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -15,8 +16,10 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.rtcall.R;
+import com.rtcall.RTCallApplication;
 import com.rtcall.net.ServerSocket;
 import com.rtcall.net.message.NetMessage;
+import com.rtcall.service.RTCallService;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -66,6 +69,15 @@ public class LoginActivity extends AppCompatActivity {
                 NetMessage msg = (NetMessage) intent.getExtras().get("message");
                 switch (msg.getType()) {
                     case NetMessage.Server.MSG_LOGGED_IN: {
+                        Log.d("LOGIN_MESSAGE", "LOGGED IN");
+                        SharedPreferences prefs = getSharedPreferences("localData", MODE_PRIVATE);
+                        SharedPreferences.Editor editor = prefs.edit();
+                        editor.putString("loggedUid", msg.getData().get("uid").getAsString());
+                        editor.apply();
+
+                        Intent service = new Intent(RTCallApplication.application, RTCallService.class);
+                        startService(service);
+
                         Intent homeIntent = new Intent(getApplication(), MainActivity.class);
                         finish();
                         startActivity(homeIntent);
