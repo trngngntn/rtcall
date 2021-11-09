@@ -27,6 +27,7 @@ public class OutgoingCallActivity extends AppCompatActivity {
     TextView txtCalleeName;
     TextView txtCallStatus;
     Button btEndCall;
+    Runnable timeout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,11 +53,18 @@ public class OutgoingCallActivity extends AppCompatActivity {
 
         initLocalBroadcastReceiver();
 
-        handler.postDelayed(() -> {
-            ServerSocket.queueMessage(NetMessage.Relay.preEndCallMessage());
-            txtCallStatus.setText("No answer");
-            handler.postDelayed(this::finish, DELAY);
-        }, 30000);
+        timeout = new Runnable() {
+            @Override
+            public void run() {
+                ServerSocket.queueMessage(NetMessage.Relay.preEndCallMessage());
+                txtCallStatus.setText("No answer");
+                handler.postDelayed(() -> {
+                    finish();
+                }, DELAY);
+            }
+        };
+
+        handler.postDelayed(timeout, 30000);
 
         initLocalBroadcastReceiver();
     }
@@ -72,6 +80,7 @@ public class OutgoingCallActivity extends AppCompatActivity {
                         Intent i = new Intent(getApplicationContext(), CallActivity.class);
                         i.putExtra("callee", callee);
                         finish();
+                        handler.removeCallbacks(timeout);
                         startActivity(i);
                     }
                     break;
@@ -82,13 +91,13 @@ public class OutgoingCallActivity extends AppCompatActivity {
                         }, DELAY);
                     }
                     break;
-                    case NetMessage.Relay.MSG_CALL_ENDED: {
+                    /*case NetMessage.Relay.MSG_CALL_ENDED: {
                         txtCallStatus.setText("Call ended");
                         handler.postDelayed(() -> {
                             finish();
                         }, DELAY);
                     }
-                    break;
+                    break;*/
                     case NetMessage.Server.MSG_CALLEE_BUSY: {
                         txtCallStatus.setText("User is busy");
                         handler.postDelayed(() -> {

@@ -1,7 +1,12 @@
 package com.rtcall.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -43,7 +48,10 @@ public class CallActivity extends AppCompatActivity {
         btEndCall = findViewById(R.id.bt_end_call);
 
         btEndCall.setOnClickListener(view -> {
-
+            ServerSocket.queueMessage(NetMessage.Relay.endCallMessage());
+            RTStream.close();
+            RTConnection.close();
+            finish();
         });
 
         Object temp = getIntent().getExtras().get("caller");
@@ -55,6 +63,8 @@ public class CallActivity extends AppCompatActivity {
         RTStream.appContext = getApplicationContext();
         RTStream.eglBaseContext = eglBase.getEglBaseContext();
         RTStream.initSurface();
+
+        initLocalBroadcastReceiver();
 
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         Runnable runnable = new Runnable() {
@@ -82,6 +92,26 @@ public class CallActivity extends AppCompatActivity {
             };
             executorService.execute(task);
         }
+    }
 
+    private void initLocalBroadcastReceiver() {
+        BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                NetMessage msg = (NetMessage) intent.getExtras().get("message");
+                Log.v("OUTCALL", "Received message " + msg.getType());
+                switch (msg.getType()) {
+                    case NetMessage.Relay.MSG_CALL_ENDED: {
+                        RTStream.close();
+                        RTConnection.close();
+                        finish();
+                    }
+                    break;
+                }
+            }
+        };
+        IntentFilter filter = new IntentFilter();
+        filter.addAction("SERVICE_MESSAGE");
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(broadcastReceiver, filter);
     }
 }

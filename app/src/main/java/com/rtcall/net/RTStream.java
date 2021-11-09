@@ -149,4 +149,14 @@ public class RTStream {
             }
         }, null);
     }
+
+    public static void close(){
+        localMediaStream.dispose();
+        //remoteMediaStream.dispose();
+        videoCapturer.dispose();
+        videoSource.dispose();
+        audioSource.dispose();
+        srfLocalStream.release();
+        srfRemoteStream.release();
+    }
 }

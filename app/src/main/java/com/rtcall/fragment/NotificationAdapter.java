@@ -111,7 +111,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
             btApprove.setOnClickListener(view -> {
                 String uid = notification.getData().get("fromUid").getAsString();
-                ServerSocket.queueMessage(NetMessage.Client.approveContactMessage(uid, notification.getId()));
+                ServerSocket.queueMessage(NetMessage.Relay.approveContactMessage(uid, notification.getId()));
                 NotificationAdapter adapter = (NotificationAdapter) getBindingAdapter();
                 adapter.localDataSet.remove(notification);
                 adapter.notifyItemRemoved(getAbsoluteAdapterPosition());
@@ -122,7 +122,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
             btReject.setOnClickListener(view -> {
                 String uid = notification.getData().get("fromUid").getAsString();
-                ServerSocket.queueMessage(NetMessage.Client.rejectContactMessage(uid, notification.getId()));
+                ServerSocket.queueMessage(NetMessage.Relay.rejectContactMessage(uid, notification.getId()));
                 NotificationAdapter adapter = (NotificationAdapter) getBindingAdapter();
                 adapter.localDataSet.remove(notification);
                 adapter.notifyItemRemoved(getAbsoluteAdapterPosition());

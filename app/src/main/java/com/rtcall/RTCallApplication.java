@@ -57,7 +57,7 @@ public class RTCallApplication extends Application implements CameraXConfig.Prov
             @Override
             public void onReceive(Context context, Intent intent) {
                 NetMessage msg = (NetMessage) intent.getExtras().get("message");
-                Log.v("LOG_SERVICE", "Received intent " + msg.getType());
+                Log.v("LOG_SERVICE", String.format("Received intent %x" ,msg.getType()));
                 switch (msg.getType()) {
                     case NetMessage.Server.MSG_REQUEST_CALL: {
                         String callerUid = msg.getData().get("caller").getAsString();
@@ -131,6 +131,42 @@ public class RTCallApplication extends Application implements CameraXConfig.Prov
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
+                    }
+                    break;
+                    case NetMessage.Relay.MSG_APPROVE_CONTACT:{
+                        Intent mainIntent = new Intent(application, MainActivity.class);
+                        mainIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        mainIntent.putExtra("flag", MainActivity.NOTIF_FRAG);
+                        PendingIntent pendingIntent = PendingIntent.getActivity(application, 411, mainIntent, 0);
+
+                        NotificationCompat.Builder notifBuilder = new NotificationCompat.Builder(getApplicationContext(), "NOTIF")
+                                .setSmallIcon(R.drawable.ic_round_notifications_24)
+                                .setContentTitle("RTCall")
+                                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                                .setDefaults(Notification.DEFAULT_ALL)
+                                .setContentIntent(pendingIntent)
+                                .setAutoCancel(true)
+                                .setContentText(msg.getData().get("uid").getAsString() + " has approved your contact request");
+                        NotificationManagerCompat notifManager = NotificationManagerCompat.from(getApplicationContext());
+                        notifManager.notify(0, notifBuilder.build());
+                    }
+                    break;
+                    case NetMessage.Relay.MSG_REJECT_CONTACT:{
+                        Intent mainIntent = new Intent(application, MainActivity.class);
+                        mainIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        mainIntent.putExtra("flag", MainActivity.NOTIF_FRAG);
+                        PendingIntent pendingIntent = PendingIntent.getActivity(application, 411, mainIntent, 0);
+
+                        NotificationCompat.Builder notifBuilder = new NotificationCompat.Builder(getApplicationContext(), "NOTIF")
+                                .setSmallIcon(R.drawable.ic_round_notifications_24)
+                                .setContentTitle("RTCall")
+                                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                                .setDefaults(Notification.DEFAULT_ALL)
+                                .setContentIntent(pendingIntent)
+                                .setAutoCancel(true)
+                                .setContentText(msg.getData().get("uid").getAsString() + " has rejected your contact request");
+                        NotificationManagerCompat notifManager = NotificationManagerCompat.from(getApplicationContext());
+                        notifManager.notify(0, notifBuilder.build());
                     }
                     break;
                     default:

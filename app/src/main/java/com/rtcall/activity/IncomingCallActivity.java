@@ -70,8 +70,7 @@ public class IncomingCallActivity extends AppCompatActivity {
                 Log.v("LOG", "Received intent");
                 NetMessage msg = (NetMessage) intent.getExtras().get("message");
                 switch (msg.getType()) {
-                    case NetMessage.Relay.MSG_CALL_PRE_ENDED:
-                    case NetMessage.Relay.MSG_CALL_ENDED: {
+                    case NetMessage.Relay.MSG_CALL_PRE_ENDED: {
                         finish();
                     }
                     break;

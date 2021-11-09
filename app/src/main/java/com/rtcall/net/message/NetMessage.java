@@ -22,8 +22,7 @@ public class NetMessage implements Serializable {
         public final static int MSG_DIAL = 0x03;
         public final static int MSG_REQ_CONTACT = 0x04;
         public final static int MSG_ADD_CONTACT = 0x05;
-        public final static int MSG_APPROVE_CONTACT = 0x06;
-        public final static int MSG_REJECT_CONTACT = 0x07;
+
         public final static int MSG_REQ_NOTIF = 0x08;
         public final static int MSG_SEEN_NOTIF = 0x09;
 
@@ -63,20 +62,6 @@ public class NetMessage implements Serializable {
             JsonObject data = new JsonObject();
             data.addProperty("uid", username);
             return new NetMessage(MSG_ADD_CONTACT, data);
-        }
-
-        public static NetMessage approveContactMessage(String uid, int notifId) {
-            JsonObject data = new JsonObject();
-            data.addProperty("uid", uid);
-            data.addProperty("notifId", notifId);
-            return new NetMessage(MSG_APPROVE_CONTACT, data);
-        }
-
-        public static NetMessage rejectContactMessage(String uid, int notifId) {
-            JsonObject data = new JsonObject();
-            data.addProperty("uid", uid);
-            data.addProperty("notifId", notifId);
-            return new NetMessage(MSG_REJECT_CONTACT, data);
         }
 
         public static NetMessage reqNotifMessage() {
@@ -120,6 +105,8 @@ public class NetMessage implements Serializable {
         public static final int MSG_CALL_DECLINED = 0x21;
         public static final int MSG_CALL_PRE_ENDED = 0x22;
         public static final int MSG_CALL_ENDED = 0x23;
+        public final static int MSG_APPROVE_CONTACT = 0x24;
+        public final static int MSG_REJECT_CONTACT = 0x25;
 
         public static final int MSG_WEBRTC_CANDIDATE = 0x30;
         public static final int MSG_WEBRTC_OFFER = 0x31;
@@ -167,6 +154,20 @@ public class NetMessage implements Serializable {
             JsonObject data = new JsonObject();
             data.addProperty("description", description);
             return new NetMessage(MSG_WEBRTC_ANSWER, data);
+        }
+
+        public static NetMessage approveContactMessage(String uid, int notifId) {
+            JsonObject data = new JsonObject();
+            data.addProperty("uid", uid);
+            data.addProperty("notifId", notifId);
+            return new NetMessage(MSG_APPROVE_CONTACT, data);
+        }
+
+        public static NetMessage rejectContactMessage(String uid, int notifId) {
+            JsonObject data = new JsonObject();
+            data.addProperty("uid", uid);
+            data.addProperty("notifId", notifId);
+            return new NetMessage(MSG_REJECT_CONTACT, data);
         }
     }
 

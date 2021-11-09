@@ -153,4 +153,8 @@ public class RTConnection {
     }
 
 
+    public static void close() {
+        peerConn.close();
+        peerConnFactory.dispose();
+    }
 }
